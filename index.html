@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Pegged</title>
+<title>Peg Legacy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow+Semi+Condensed:ital,wght@0,400;0,600;0,700;1,400&display=swap">
@@ -1297,7 +1297,7 @@ if (typeof module !== 'undefined') module.exports = Record;
     const score = b ? b.score : 0;
     const d = ui.disp;
     return `
-      <div class="brand"><h1>Pegged</h1><small>prototype v0.1</small></div>
+      <div class="brand"><h1>Peg Legacy</h1><small>prototype v0.1</small></div>
       <div class="panel blind-card">
         <div class="eyebrow">Ante ${Math.min(r.ante, r.cfg.antes)} of ${r.cfg.antes} · ${b ? r.cfg.blindNames[b.idx] : 'Up next'}</div>
         <div class="bname">${esc(name)}</div>
@@ -1972,8 +1972,8 @@ if (typeof module !== 'undefined') module.exports = Record;
   const btn = document.createElement('button');
   btn.type = 'button'; btn.className = 'fb-btn'; btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'fb-panel');
   const panel = document.createElement('div');
-  panel.className = 'fb-panel'; panel.id = 'fb-panel'; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Playtest notes');
-  panel.innerHTML = `<h4>Playtest notes</h4>
+  panel.className = 'fb-panel'; panel.id = 'fb-panel'; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Feedback');
+  panel.innerHTML = `<h4>Feedback</h4>
     <div style="font-size:13px;color:var(--muted,#b7a58c)">Jot anything: fun, confusing, broken, too hard. Your game keeps going.</div>
     <label for="fb-text">Note</label><textarea id="fb-text" placeholder="What just happened, and how did it feel?"></textarea>
     <label for="fb-name">Your name (remembered)</label><input id="fb-name" maxlength="40" autocomplete="nickname">
@@ -1982,7 +1982,7 @@ if (typeof module !== 'undefined') module.exports = Record;
   document.body.appendChild(panel); document.body.appendChild(btn);
   const text = panel.querySelector('#fb-text'), name = panel.querySelector('#fb-name'), status = panel.querySelector('.fb-status');
   name.value = get(NAME_KEY, '') || '';
-  const label = () => { btn.textContent = notes.length ? `Notes (${notes.length})` : 'Notes'; };
+  const label = () => { btn.textContent = notes.length ? `Feedback (${notes.length})` : 'Feedback'; };
   label();
 
   function toggle(open) {
