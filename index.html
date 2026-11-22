@@ -258,6 +258,41 @@ table.levels th { color: var(--muted); font-weight: 600; font-size: 13px; letter
   <main class="table" id="main"></main>
 </div>
 <div id="overlay"></div>
+<style>/* Phone and narrow-window layout for the hosted page (orchestrator, 2026-11-22, D-223). Host layer: added by
+   tools/pegged-build.js after the game's own styles, so it only overrides them at narrow widths.
+   Order on a phone: name, then the blind and the count side by side, the four stats, the table (rack, cards, play
+   buttons), and last the utility buttons (Levels, Deck, How to play, ...), so the board and the cards sit together
+   and nobody scrolls past menu buttons to reach their hand. */
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr 1fr; align-items: start; padding-bottom: 72px; } /* room for the Feedback button */
+  .side { display: contents; }
+  .brand, .stats, .table, .side-buttons { grid-column: 1 / -1; }
+  .brand { order: 0; }
+  .side > .panel { order: 1; align-self: stretch; }
+  .stats { order: 2; }
+  .table { order: 3; }
+  .side-buttons { order: 4; margin-top: 6px; }
+}
+@media (max-width: 520px) {
+  .app { gap: 8px; padding-block: 10px; padding-inline: 10px; }
+  .brand h1 { font-size: 22px; }
+  .side-buttons { grid-template-columns: repeat(2, 1fr); }
+  .side-buttons .btn { min-height: 44px; }
+  /* Fit the board, the rack and the hand on one phone screen: empty rack slots stay short until something is bought,
+     and the deck, starter and crib share one row above the hand. */
+  .table { gap: 8px; }
+  .kibs, .conses { min-height: 0; gap: 6px; }
+  .slot-empty { width: auto; flex: 1 1 0; min-height: 40px; }
+  .felt { min-height: 0; padding: 10px; gap: 8px; border-width: 4px; }
+  .felt-top { flex-wrap: nowrap; gap: 10px; }
+  .felt-top .row { flex-wrap: nowrap; }
+  .felt-top .row { gap: 4px; }
+  .felt-top .zone .label { font-size: 11px; min-height: 2.6em; }
+  .hand-row { gap: 5px; padding-top: 8px; }
+}
+/* Pulling down past the top of the page must not reload it (phone browsers' pull-to-refresh). */
+html, body { overscroll-behavior-y: contain; }
+</style>
 <script>// Crib Engine — pure rules + scoring. No DOM. Portable to GDScript later.
 // Card: { id, rank 1..13, suit 0..3, enh? }   value = min(rank, 10)
 const Engine = (() => {
