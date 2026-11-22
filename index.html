@@ -600,7 +600,7 @@ const Content = (() => {
       onEnd: (a, ctx) => { if (ctx.rand() < 1 / 3) a.xMult(3); } },
 
     // ---------------- Rare ----------------
-    { id: 'twenty_nine', name: 'Twenty-Nine', rarity: 3, cost: 9, text: 'Gains x0.2 Mult for every count of 12 or more. Applies its xMult to every count.',
+    { id: 'twenty_nine', name: 'Twenty-Nine', rarity: 3, cost: 9, text: 'Starts at x1 Mult. +0.2 for every count of 12 or more. Multiplies every count.',
       init: s => { s.x = 1; }, info: s => `(currently x${s.x.toFixed(1)} Mult)`,
       onEnd: (a, ctx, trad, self) => { if (trad >= 12) self.state.x = +(self.state.x + 0.2).toFixed(2); if (self.state.x > 1) a.xMult(self.state.x); } },
     { id: 'skunk', name: 'The Skunk', rarity: 3, cost: 9, text: 'x3 Mult on crib counts',
@@ -1053,7 +1053,7 @@ const Record = (() => {
   const E = typeof Engine !== 'undefined' ? Engine : require('./engine.js');
 
   const RECORD_VERSION = 1;
-  const BUILD_ID = 'pegged-src-2026-11-21-r2'; // bump by hand on every change to src/ (no build step hashes files yet)
+  const BUILD_ID = 'pegged-src-2026-11-22-r3'; // bump by hand on every change to src/ (no build step hashes files yet)
   const MAX_ERRORS = 50;
 
   const today = () => new Date().toISOString().slice(0, 10);
@@ -1450,6 +1450,7 @@ if (typeof module !== 'undefined') module.exports = Record;
     const on = v => (bl.feel === v ? ' sel' : '');
     return `<div class="feel" style="margin:10px 0"><span class="label">That blind felt (optional)</span>
       <button class="btn small${on('good')}" data-act="feel-good" aria-pressed="${bl.feel === 'good'}">Good</button>
+      <button class="btn small${on('easy')}" data-act="feel-easy" aria-pressed="${bl.feel === 'easy'}">Too easy</button>
       <button class="btn small${on('unfair')}" data-act="feel-unfair" aria-pressed="${bl.feel === 'unfair'}">Unfair</button></div>`;
   }
 
@@ -1766,6 +1767,7 @@ if (typeof module !== 'undefined') module.exports = Record;
         break;
       }
       case 'feel-good': if (ui.rec) R.setFeel(ui.rec, 'good'); break;
+      case 'feel-easy': if (ui.rec) R.setFeel(ui.rec, 'easy'); break;
       case 'feel-unfair': if (ui.rec) R.setFeel(ui.rec, 'unfair'); break;
       case 'copyrecord': copyText(recordJSON(false), el); return;
       case 'copyall': copyText(recordJSON(true), el); return;
@@ -1934,7 +1936,7 @@ if (typeof module !== 'undefined') module.exports = Record;
 
 
 </script>
-<script>window.PEGGED_FEEDBACK = {"formUrl":"https://docs.google.com/forms/d/e/1FAIpQLScPaGBfBrgFrAUSuvSV1qS4VJNDPgm-zeeEo-9Yz2GCCxajuQ/formResponse","fields":{"note":"entry.1508996670","name":"entry.676476422","where":"entry.435230136","seed":"entry.1473795080","build":"entry.351571477"},"build":"pegged-6248d4e922"};</script>
+<script>window.PEGGED_FEEDBACK = {"formUrl":"https://docs.google.com/forms/d/e/1FAIpQLScPaGBfBrgFrAUSuvSV1qS4VJNDPgm-zeeEo-9Yz2GCCxajuQ/formResponse","fields":{"note":"entry.1508996670","name":"entry.676476422","where":"entry.435230136","seed":"entry.1473795080","build":"entry.351571477"},"build":"pegged-e2f67ba775"};</script>
 <script>// Playtest notes button for the hosted Pegged page (orchestrator, 2026-11-22; Beff: "a button in the corner for
 // feedback so they can drop notes during play without stopping"). Host layer only: the game's src/ does not know
 // about it. Added to the page by tools/pegged-build.js, after ui.js.
