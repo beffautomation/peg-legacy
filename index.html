@@ -1,0 +1,2032 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pegged</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow+Semi+Condensed:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>:root {
+  color-scheme: dark;
+  --walnut-0: #1a120d;
+  --walnut-1: #241912;
+  --walnut-2: #33241a;
+  --maple: #7a5638;
+  --grain: #4a3424;
+  --ivory: #f3ebdd;
+  --ivory-2: #e4d8c3;
+  --ink: #1c1714;
+  --text: #efe4d2;
+  --muted: #b7a58c;
+  --brass: #d4ad55;
+  --brass-dim: #8f7337;
+  --blue: #3f86c8;
+  --blue-deep: #1f4f7c;
+  --red: #c9483a;
+  --red-deep: #7d2a21;
+  --green: #5d9c5a;
+  --suit-red: #b3372b;
+  --r-common: #7f93a8;
+  --r-uncommon: #5d9c5a;
+  --r-rare: #c9483a;
+  --card-w: clamp(56px, 11.5vw, 92px);
+  --display: "Alfa Slab One", "Rockwell", "Roboto Slab", Georgia, serif;
+  --body: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+}
+html, body { height: 100%; }
+body {
+  background: var(--walnut-0);
+  background-image:
+    repeating-linear-gradient(92deg, rgba(255,255,255,.012) 0 2px, transparent 2px 7px),
+    radial-gradient(120% 80% at 60% 0%, #2c1f16 0%, var(--walnut-0) 70%);
+  color: var(--text);
+  font: 16px/1.35 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; }
+.app {
+  display: grid; grid-template-columns: 290px 1fr; gap: 16px;
+  min-height: 100%; padding-block: 16px; padding-inline: 16px; box-sizing: border-box;
+  max-width: 1280px; margin: 0 auto;
+}
+
+/* ---------- Side panel ---------- */
+.side { display: flex; flex-direction: column; gap: 12px; }
+.brand { display: flex; align-items: baseline; justify-content: space-between; }
+.brand h1 { font: 30px/1 var(--display); margin: 0; color: var(--brass); letter-spacing: .02em; }
+.brand small { color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.panel {
+  background: linear-gradient(180deg, var(--walnut-2), var(--walnut-1));
+  border: 1px solid var(--grain); border-radius: 10px; padding: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.blind-card .eyebrow, .label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.blind-card .bname { font: 22px/1.1 var(--display); margin: 2px 0 4px; text-wrap: balance; }
+.blind-card .btext { font-size: 14px; color: var(--brass); min-height: 1em; }
+.target-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
+.target-row .num { font: 24px/1 var(--display); font-variant-numeric: tabular-nums; }
+.score-big { font: 38px/1 var(--display); font-variant-numeric: tabular-nums; color: var(--ivory); }
+.pegboard { width: 100%; height: auto; display: block; margin-top: 8px; }
+.pegboard .hole { fill: #120c08; }
+.pegboard .hole.five { fill: #0b0705; }
+.pegboard .track { fill: var(--maple); }
+.pegboard .peg-front { fill: var(--red); stroke: #2a0e0a; stroke-width: 1; transition: cx .5s ease, cy .5s ease; }
+.pegboard .peg-back { fill: var(--red-deep); stroke: #2a0e0a; stroke-width: 1; transition: cx .5s ease, cy .5s ease; }
+.pegboard text { fill: #2b1d12; font: 9px var(--body); font-weight: 700; }
+
+.pxm { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; margin-top: 4px; }
+.pxm .box {
+  border-radius: 8px; padding: 8px 6px; text-align: center;
+  font: 26px/1 var(--display); font-variant-numeric: tabular-nums; color: #fff;
+  transition: transform .12s ease;
+}
+.pxm .pts { background: linear-gradient(180deg, var(--blue), var(--blue-deep)); }
+.pxm .mul { background: linear-gradient(180deg, var(--red), var(--red-deep)); }
+.pxm .x { font: 22px var(--display); color: var(--muted); }
+.pxm .box.bump { transform: scale(1.12); }
+.pxm-total { text-align: center; margin-top: 6px; font: 20px var(--display); color: var(--brass); font-variant-numeric: tabular-nums; min-height: 24px; }
+.narration { margin-top: 6px; min-height: 42px; font-size: 15px; color: var(--ivory-2); font-style: italic; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.stat { background: var(--walnut-0); border: 1px solid var(--grain); border-radius: 8px; padding: 6px 4px; text-align: center; }
+.stat .v { font: 20px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.stat .v.money { color: var(--brass); }
+.stat .v.deals { color: var(--blue); }
+.stat .v.swaps { color: var(--red); }
+.side-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 700; letter-spacing: .02em;
+  background: var(--grain); color: var(--text); box-shadow: 0 3px 0 #0e0906; transition: transform .06s, filter .15s;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.15); }
+.btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #0e0906; }
+.btn:disabled { opacity: .38; cursor: not-allowed; }
+.btn:focus-visible, .card:focus-visible, .kib:focus-visible, .cons:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+.btn.blue { background: var(--blue-deep); }
+.btn.red { background: var(--red-deep); }
+.btn.brass { background: var(--brass); color: var(--ink); }
+.btn.small { padding: 6px 8px; font-size: 13px; }
+
+/* ---------- Table ---------- */
+.table { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.rack { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+.slots-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.kibs, .conses { display: flex; gap: 8px; flex-wrap: wrap; min-height: 118px; }
+.kib, .cons {
+  position: relative; width: 112px; min-height: 112px; box-sizing: border-box; border-radius: 9px; padding: 8px; cursor: pointer;
+  background: var(--ivory); color: var(--ink); border: 0; text-align: left; display: flex; flex-direction: column; gap: 4px;
+  box-shadow: 0 4px 0 #0e0906, 0 6px 14px rgba(0,0,0,.35); transition: transform .12s;
+}
+.kib::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; border-radius: 9px 9px 0 0; background: var(--r-common); }
+.kib.r2::before { background: var(--r-uncommon); }
+.kib.r3::before { background: var(--r-rare); }
+.kib .kn, .cons .kn { font: 13px/1.1 var(--display); margin-top: 4px; }
+.kib .kt, .cons .kt { font-size: 12.5px; line-height: 1.2; }
+.kib .ki { font-size: 12px; color: #6a5238; font-weight: 700; }
+.kib.fire { animation: jiggle .35s ease; }
+.kib.sel, .cons.sel { outline: 3px solid var(--brass); outline-offset: 2px; }
+.cons { background: #dfe7ef; }
+.cons.trick { background: #eadcf0; }
+.slot-empty { width: 112px; min-height: 112px; border: 2px dashed var(--grain); border-radius: 9px; box-sizing: border-box; }
+.bubble {
+  position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); white-space: nowrap; z-index: 5;
+  background: var(--red); color: #fff; font: 13px var(--display); padding: 3px 7px; border-radius: 6px; pointer-events: none;
+  animation: pop .5s ease both;
+}
+.bubble.pts { background: var(--blue); }
+.bubble.money { background: var(--brass); color: var(--ink); }
+.item-actions { display: flex; gap: 4px; margin-top: auto; flex-wrap: wrap; }
+
+.felt {
+  border-radius: 16px; padding: 16px; position: relative;
+  background: radial-gradient(120% 90% at 50% 20%, #2f5a45 0%, #1f3d30 60%, #173026 100%);
+  border: 6px solid var(--maple); box-shadow: inset 0 0 40px rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.4);
+  display: flex; flex-direction: column; gap: 16px; min-height: 380px;
+}
+.felt-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.zone { display: flex; flex-direction: column; gap: 6px; }
+.zone .label { color: #cfe3d6; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.hand-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding-top: 16px; }
+
+/* ---------- Cards ---------- */
+.card {
+  width: var(--card-w); aspect-ratio: 5 / 7; max-width: 100%; box-sizing: border-box; border-radius: 8px; position: relative; cursor: pointer;
+  background: var(--ivory); color: var(--ink); border: 0; padding: 0; user-select: none;
+  box-shadow: 0 3px 0 #0e0906, 0 6px 12px rgba(0,0,0,.35); transition: transform .14s ease, box-shadow .14s, filter .2s;
+}
+.card .rk { position: absolute; top: 5px; left: 7px; font: clamp(15px, 2.6vw, 22px)/1 var(--display); }
+.card .st { position: absolute; top: calc(5px + clamp(15px, 2.6vw, 22px)); left: 8px; font-size: clamp(12px, 2vw, 17px); }
+.card .big { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(26px, 5vw, 44px); padding-top: 10px; }
+.card .val { position: absolute; bottom: 4px; right: 6px; font-size: 11px; color: #8b775d; font-weight: 700; }
+.card.red { color: var(--suit-red); }
+.card.sel { transform: translateY(-14px); box-shadow: 0 0 0 3px var(--brass), 0 10px 18px rgba(0,0,0,.45); }
+.card.hint { box-shadow: 0 0 0 3px #8fd0ff, 0 6px 12px rgba(0,0,0,.35); }
+.card.debuff { filter: grayscale(1) brightness(.7); }
+.card.debuff::after { content: "✕"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 40px; color: rgba(160,30,20,.7); }
+.card.lit { transform: translateY(-8px) scale(1.04); box-shadow: 0 0 0 3px #ffe08a, 0 0 22px rgba(255,210,110,.55); }
+.card.dim { filter: brightness(.55); }
+.card.back {
+  background: repeating-linear-gradient(45deg, var(--red-deep) 0 6px, #6a241c 6px 12px); cursor: default;
+  box-shadow: inset 0 0 0 4px var(--ivory), 0 3px 0 #0e0906;
+}
+.card.ghost { background: rgba(0,0,0,.18); box-shadow: inset 0 0 0 2px rgba(255,255,255,.12); cursor: default; }
+.card.deckpile { cursor: default; }
+.card.deckpile .cnt { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; color: var(--ivory); font: 14px var(--display); }
+.card.flip { animation: flip .35s ease; }
+
+.actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.msg { text-align: center; min-height: 22px; color: var(--ivory-2); font-size: 15px; }
+
+/* ---------- Screens ---------- */
+.screen { display: flex; flex-direction: column; gap: 14px; }
+.screen h2 { font: 26px/1.1 var(--display); margin: 0; color: var(--brass); text-wrap: balance; }
+.blinds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.blind-opt { display: flex; flex-direction: column; gap: 8px; text-align: center; align-items: center; }
+.blind-opt.done { opacity: .5; }
+.blind-opt.future { opacity: .75; }
+.chip {
+  width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; font: 13px/1 var(--display); text-align: center;
+  background: radial-gradient(circle at 35% 30%, #5b7fa8, #2c4a6e); color: #fff; box-shadow: inset 0 0 0 5px rgba(255,255,255,.25), 0 4px 0 #0e0906;
+}
+.chip.big { background: radial-gradient(circle at 35% 30%, #d8b35c, #8f7337); color: var(--ink); }
+.chip.boss { background: radial-gradient(circle at 35% 30%, #d45a4a, #7d2a21); }
+.cash-lines { display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
+.cash-line { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--grain); padding-bottom: 4px; }
+.cash-line .amt { color: var(--brass); font: 18px var(--display); }
+.shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.shop-items { display: flex; gap: 10px; flex-wrap: wrap; }
+.shop-item { display: flex; flex-direction: column; gap: 6px; align-items: stretch; width: 128px; }
+.shop-item .kib, .shop-item .cons { width: 128px; }
+.price { font: 15px var(--display); color: var(--brass); text-align: center; }
+
+.overlay { position: fixed; inset: 0; background: rgba(8,5,3,.72); display: grid; place-items: center; z-index: 50; padding: 16px; }
+.overlay .sheet { max-width: 640px; width: 100%; max-height: 86vh; overflow: auto; box-sizing: border-box; }
+.sheet h3 { font: 22px var(--display); color: var(--brass); margin: 0 0 8px; }
+.sheet p, .sheet li { color: var(--ivory-2); max-width: 65ch; }
+.tbl-wrap { overflow-x: auto; }
+table.levels { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+table.levels th, table.levels td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--grain); }
+table.levels th { color: var(--muted); font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.deckgrid { display: grid; grid-template-columns: 34px repeat(13, 1fr); gap: 2px; font-size: 13px; text-align: center; }
+.deckgrid .h { color: var(--muted); }
+.deckgrid .c { background: var(--walnut-0); border-radius: 3px; padding: 2px 0; }
+.deckgrid .c.z { opacity: .25; }
+.deckgrid .c.x { color: var(--brass); font-weight: 700; }
+
+@keyframes jiggle { 0%,100% { transform: rotate(0) } 25% { transform: rotate(-5deg) scale(1.05) } 75% { transform: rotate(4deg) scale(1.05) } }
+@keyframes pop { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.8) } 30% { opacity: 1; transform: translate(-50%, 0) scale(1.08) } 100% { opacity: 1; transform: translate(-50%, 0) scale(1) } }
+@keyframes flip { 0% { transform: rotateY(90deg) } 100% { transform: rotateY(0) } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; }
+  .brand, .side-buttons, .stats { grid-column: 1 / -1; }
+  .rack { grid-template-columns: 1fr; }
+  .shop-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  :root { --card-w: min(56px, calc((100vw - 96px) / 6)); }
+  .app { gap: 10px; }
+  .side { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .brand h1 { font-size: 24px; }
+  .panel { padding: 9px; }
+  .blind-card .bname { font-size: 17px; }
+  .blind-card .btext { font-size: 12.5px; }
+  .target-row .num { font-size: 18px; }
+  .score-big { font-size: 26px; }
+  .pxm .box { font-size: 18px; padding: 6px 2px; }
+  .pxm-total { font-size: 15px; }
+  .narration { font-size: 13px; min-height: 34px; }
+  .stat .v { font-size: 16px; }
+  .side-buttons { grid-template-columns: repeat(3, 1fr); }
+  .side-buttons .btn { padding: 5px 4px; font-size: 12px; }
+  .kibs, .conses { min-height: 0; gap: 5px; }
+  .kib, .cons, .slot-empty { width: calc(20% - 4px); min-width: 0; min-height: 76px; padding: 5px; }
+  .conses .cons, .conses .slot-empty { width: calc(50% - 3px); }
+  .kib .kn, .cons .kn { font-size: 11px; }
+  .kib .kt, .cons .kt, .kib .ki { font-size: 10.5px; }
+  .shop-item, .shop-item .kib, .shop-item .cons { width: calc(50vw - 40px); }
+  .blinds { grid-template-columns: 1fr; }
+  .felt { padding: 10px; min-height: 0; gap: 10px; border-width: 4px; }
+  .felt-top { gap: 10px; }
+  .hand-row { gap: 4px; flex-wrap: nowrap; }
+  .actions .btn { padding: 9px 10px; }
+}
+</style>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <main class="table" id="main"></main>
+</div>
+<div id="overlay"></div>
+<script>// Crib Engine — pure rules + scoring. No DOM. Portable to GDScript later.
+// Card: { id, rank 1..13, suit 0..3, enh? }   value = min(rank, 10)
+const Engine = (() => {
+  'use strict';
+
+  const SUIT_GLYPH = ['♠', '♥', '♦', '♣'];
+  const RANK_LABEL = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  const value = c => (c.rank > 10 ? 10 : c.rank);
+  const label = c => RANK_LABEL[c.rank] + SUIT_GLYPH[c.suit];
+
+  // ---------- RNG (seeded, deterministic — needed for seeds, replays, sims) ----------
+  // next.state() is the stream's position: makeRng(next.state()) continues the same stream exactly (saves).
+  function makeRng(seed) {
+    let a = seed >>> 0;
+    const next = function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    next.state = () => a;
+    return next;
+  }
+  function shuffle(arr, rand) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (rand() * (i + 1)) | 0;
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+  function makeDeck() {
+    const d = [];
+    let id = 0;
+    for (let s = 0; s < 4; s++) for (let r = 1; r <= 13; r++) d.push({ id: id++, rank: r, suit: s });
+    return d;
+  }
+
+  // ---------- Scoring categories ----------
+  // Level 1 == traditional cribbage (Mult 1). Each level above 1 adds:
+  //   lvPts  Points to EVERY event of that category (more fifteens -> more points)
+  //   lvMult Mult ONCE per count, if the category scores at all (keeps growth Balatro-like, not explosive)
+  const CATEGORIES = {
+    heels:   { name: 'His Heels', short: 'Heels',   lvPts: 3, lvMult: 1 },
+    fifteen: { name: 'Fifteens',  short: 'Fifteen', lvPts: 1, lvMult: 0.5 },
+    pair:    { name: 'Pairs',     short: 'Pair',    lvPts: 2, lvMult: 0.5 },
+    run:     { name: 'Runs',      short: 'Run',     lvPts: 3, lvMult: 0.5 },
+    flush:   { name: 'Flushes',   short: 'Flush',   lvPts: 4, lvMult: 1 },
+    nobs:    { name: 'His Nobs',  short: 'Nobs',    lvPts: 4, lvMult: 1 },
+  };
+  const CAT_ORDER = ['heels', 'fifteen', 'pair', 'run', 'flush', 'nobs'];
+
+  // ---------- Fast traditional count (hot path for AI + sims) ----------
+  // hand: 4 cards, starter: 1 card. Returns traditional points.
+  function fastCount(hand, starter, isCrib) {
+    const c0 = hand[0], c1 = hand[1], c2 = hand[2], c3 = hand[3];
+    const cards = [c0, c1, c2, c3, starter];
+    let pts = 0;
+    // fifteens via subset sums over 5 cards (31 masks)
+    const v = [value(c0), value(c1), value(c2), value(c3), value(starter)];
+    for (let m = 3; m < 32; m++) {
+      let s = 0;
+      for (let i = 0; i < 5; i++) if (m & (1 << i)) s += v[i];
+      if (s === 15) pts += 2;
+    }
+    // pairs + runs from rank histogram
+    const h = new Uint8Array(15);
+    for (let i = 0; i < 5; i++) h[cards[i].rank]++;
+    for (let r = 1; r <= 13; r++) { const n = h[r]; if (n > 1) pts += n * (n - 1); } // C(n,2)*2
+    let r = 1;
+    while (r <= 13) {
+      if (!h[r]) { r++; continue; }
+      let len = 0, mult = 1;
+      while (r <= 13 && h[r]) { len++; mult *= h[r]; r++; }
+      if (len >= 3) pts += len * mult;
+    }
+    // flush
+    if (c0.suit === c1.suit && c1.suit === c2.suit && c2.suit === c3.suit) {
+      if (starter.suit === c0.suit) pts += 5; else if (!isCrib) pts += 4;
+    }
+    // nobs
+    for (let i = 0; i < 4; i++) if (hand[i].rank === 11 && hand[i].suit === starter.suit) { pts += 1; break; }
+    return pts;
+  }
+
+  // ---------- Event enumeration (for the visible "count") ----------
+  // Returns ordered events: { cat, cards:[card], base, label }
+  // opts.eligible(card) -> false excludes a debuffed card from all combos.
+  // opts.disabled: Set of categories that don't score.
+  function findEvents(hand, starter, isCrib, opts = {}) {
+    const eligible = opts.eligible || (() => true);
+    const disabled = opts.disabled || new Set();
+    const val = opts.valueFn || value;          // rule-benders may change card values
+    const flushMin = opts.flushMin || 4;        // "Short Suit": 3-card flushes
+    const all = hand.concat([starter]).filter(eligible);
+    const ev = [];
+
+    // His Heels: starter is a Jack. Scored at the cut, credited to the hand count.
+    if (opts.heels && !isCrib && !disabled.has('heels') && eligible(starter) && starter.rank === 11)
+      ev.push({ cat: 'heels', cards: [starter], base: 2, label: 'His Heels' });
+
+    if (!disabled.has('fifteen')) {
+      const n = all.length;
+      for (let m = 1; m < (1 << n); m++) {
+        let s = 0; const cs = [];
+        for (let i = 0; i < n; i++) if (m & (1 << i)) { s += val(all[i]); cs.push(all[i]); }
+        if (s === 15) ev.push({ cat: 'fifteen', cards: cs, base: 2, label: 'Fifteen' });
+      }
+    }
+    if (!disabled.has('pair')) {
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++)
+          if (all[i].rank === all[j].rank) ev.push({ cat: 'pair', cards: [all[i], all[j]], base: 2, label: 'Pair' });
+    }
+    if (!disabled.has('run')) {
+      const byRank = {};
+      for (const c of all) (byRank[c.rank] = byRank[c.rank] || []).push(c);
+      let r = 1;
+      while (r <= 13) {
+        if (!byRank[r]) { r++; continue; }
+        const seq = [];
+        while (r <= 13 && byRank[r]) { seq.push(byRank[r]); r++; }
+        if (seq.length >= 3) {
+          // cartesian product: one card per rank => each distinct run
+          let combos = [[]];
+          for (const group of seq) {
+            const next = [];
+            for (const base of combos) for (const c of group) next.push(base.concat([c]));
+            combos = next;
+          }
+          for (const cs of combos)
+            ev.push({ cat: 'run', cards: cs, base: cs.length, label: `Run of ${cs.length}` });
+        }
+      }
+    }
+    if (!disabled.has('flush')) {
+      const hs = hand.filter(eligible);
+      // largest same-suit group in the hand
+      const bySuit = [[], [], [], []];
+      for (const c of hs) bySuit[c.suit].push(c);
+      let grp = bySuit[0];
+      for (const g of bySuit) if (g.length > grp.length) grp = g;
+      if (grp.length >= flushMin) {
+        const withStarter = eligible(starter) && starter.suit === grp[0].suit;
+        const cribNeedsStarter = isCrib && !opts.cribFlushAny;
+        if (withStarter) ev.push({ cat: 'flush', cards: grp.concat([starter]), base: grp.length + 1, label: `${grp.length + 1}-card Flush` });
+        else if (!cribNeedsStarter) ev.push({ cat: 'flush', cards: grp, base: grp.length, label: `${grp.length}-card Flush` });
+      }
+    }
+    if (!disabled.has('nobs') && eligible(starter)) {
+      const j = hand.find(c => eligible(c) && c.rank === 11 && c.suit === starter.suit);
+      if (j) ev.push({ cat: 'nobs', cards: [j, starter], base: 1, label: 'His Nobs' });
+    }
+    return ev;
+  }
+
+  // ---------- Points × Mult resolution ----------
+  // ctx: { levels:{cat:lvl}, kibitzers:[k], isCrib, hand, starter, run:{...}, rand }
+  // Returns { steps:[...], points, mult, total, traditional }
+  function resolve(events, ctx) {
+    const S = { points: 0, mult: 1, money: 0, notes: null, src: null };
+    const note = (src, text, kind) => S.notes.push({ src: src || S.src, text, kind, points: S.points, mult: S.mult });
+    const api = {
+      get points() { return S.points; }, get mult() { return S.mult; },
+      addPoints(n, src) { S.points += n; note(src, `+${n} Points`, 'pts'); },
+      addMult(n, src)   { S.mult += n;   note(src, `+${n} Mult`, 'mult'); },
+      xMult(n, src)     { S.mult *= n;   note(src, `×${n} Mult`, 'mult'); },
+      setPoints(n, src) { S.points = n;  note(src, `${n} Points`, 'pts'); },
+      addMoney(n, src)  { S.money += n;  note(src, `+$${n}`, 'money'); },
+    };
+    const steps = [];
+    const kibs = ctx.kibitzers || [];
+    const lv = ctx.levels || {};
+    let traditional = 0;
+
+    const seenCat = new Set();
+    for (const e of events) {
+      // retriggers (e.g. "Runs score twice")
+      let times = 1;
+      for (const k of kibs) if (k.retrigger) times += k.retrigger(e, ctx) || 0;
+      for (let t = 0; t < times; t++) {
+        S.notes = [];
+        const L = (lv[e.cat] || 1) - 1;
+        const cat = CATEGORIES[e.cat];
+        const pts = e.base + L * cat.lvPts;
+        const madd = seenCat.has(e.cat) ? 0 : L * cat.lvMult;
+        seenCat.add(e.cat);
+        S.points += pts; S.mult += madd;
+        const prePoints = S.points, preMult = S.mult;
+        if (t === 0) traditional += e.base;
+        for (const k of kibs) if (k.onEvent) { S.src = k; k.onEvent(e, api, ctx, k); }
+        steps.push({ kind: 'event', ev: e, pts, madd, retrigger: t > 0, notes: S.notes, prePoints, preMult, points: S.points, mult: S.mult, traditional });
+      }
+    }
+    S.notes = [];
+    for (const k of kibs) if (k.onEnd) { S.src = k; k.onEnd(api, ctx, traditional, k); }
+    if (S.notes.length) steps.push({ kind: 'end', notes: S.notes, points: S.points, mult: S.mult });
+    const mult = Math.round(S.mult * 100) / 100;
+    const total = Math.floor(S.points * mult);
+    return { steps, points: S.points, mult, total, traditional, money: S.money };
+  }
+
+  // ---------- Discard advisor (also the sim AI) ----------
+  // Rough crib contribution of two thrown cards (standard heuristic).
+  function throwCribValue(a, b) {
+    let x = 0;
+    if (value(a) + value(b) === 15) x += 2;
+    if (a.rank === b.rank) x += 2;
+    if (Math.abs(a.rank - b.rank) === 1) x += 1;
+    if (a.rank === 5) x += 1.5;
+    if (b.rank === 5) x += 1.5;
+    return x;
+  }
+  // Returns best [i,j] indices to throw from a 6-card hand. `unseen`: cards possible as starter.
+  function bestThrow(six, ownCrib, unseen) {
+    let best = null, bestEv = -1e9;
+    for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
+      const keep = [];
+      for (let k = 0; k < 6; k++) if (k !== i && k !== j) keep.push(six[k]);
+      let sum = 0;
+      for (const s of unseen) sum += fastCount(keep, s, false);
+      let ev = sum / unseen.length;
+      const cv = throwCribValue(six[i], six[j]);
+      ev += ownCrib ? cv : -cv;
+      if (ev > bestEv) { bestEv = ev; best = [i, j]; }
+    }
+    return best;
+  }
+
+  return {
+    SUIT_GLYPH, RANK_LABEL, CATEGORIES, CAT_ORDER,
+    value, label, makeRng, shuffle, makeDeck,
+    fastCount, findEvents, resolve, bestThrow,
+  };
+})();
+if (typeof module !== 'undefined') module.exports = Engine;
+
+
+</script>
+<script>// Content definitions: Kibitzers (jokers), Pegs (planet-style level-ups), Tricks (tarot-style), Bosses.
+// Data-driven: every item is a plain object with hooks. Engine calls:
+//   rule(opts)                         -> mutate findEvents options (rule-benders)
+//   retrigger(ev, ctx) -> n            -> extra times an event scores
+//   onEvent(ev, api, ctx, self)        -> per scoring event
+//   onEnd(api, ctx, traditional, self) -> after all events
+//   onBlindEnd(run, self) -> $         -> economy
+const Content = (() => {
+  'use strict';
+  const cardsIn = ctx => ctx.cards.filter(ctx.eligible);
+  const isFace = c => c.rank >= 11;
+
+  const KIBITZERS = [
+    // ---------------- Common ----------------
+    { id: 'old_timer', name: 'The Old Timer', rarity: 1, cost: 3, text: '+4 Mult',
+      onEnd: (a) => a.addMult(4) },
+    { id: 'fifteen_two', name: 'Fifteen-Two', rarity: 1, cost: 5, text: '+2 Mult per Fifteen',
+      onEvent: (e, a) => { if (e.cat === 'fifteen') a.addMult(2); } },
+    { id: 'pair_royal', name: 'Pair Royal', rarity: 1, cost: 5, text: '+4 Mult per Pair',
+      onEvent: (e, a) => { if (e.cat === 'pair') a.addMult(4); } },
+    { id: 'run_rabbit', name: 'Run Rabbit', rarity: 1, cost: 5, text: '+1 Mult per card in each Run',
+      onEvent: (e, a) => { if (e.cat === 'run') a.addMult(e.cards.length); } },
+    { id: 'suit_yourself', name: 'Suit Yourself', rarity: 1, cost: 5, text: '+12 Mult when a Flush scores',
+      onEvent: (e, a) => { if (e.cat === 'flush') a.addMult(12); } },
+    { id: 'tally', name: 'Tally Marks', rarity: 1, cost: 4, text: '+3 Points per scoring event',
+      onEvent: (e, a) => a.addPoints(3) },
+    { id: 'fiver', name: 'The Fiver', rarity: 1, cost: 5, text: '+8 Points per 5 in the count',
+      onEnd: (a, ctx) => { const n = cardsIn(ctx).filter(c => c.rank === 5).length; if (n) a.addPoints(8 * n); } },
+    { id: 'low_ball', name: 'Low Ball', rarity: 1, cost: 4, text: '+4 Points per A, 2, 3 or 4 in the count',
+      onEnd: (a, ctx) => { const n = cardsIn(ctx).filter(c => c.rank <= 4).length; if (n) a.addPoints(4 * n); } },
+    { id: 'court', name: 'The Court', rarity: 1, cost: 4, text: '+3 Points per face card in each Fifteen',
+      onEvent: (e, a) => { if (e.cat === 'fifteen') { const n = e.cards.filter(isFace).length; if (n) a.addPoints(3 * n); } } },
+    { id: 'pone', name: 'The Pone', rarity: 1, cost: 5, text: '+6 Mult on hand counts',
+      onEnd: (a, ctx) => { if (!ctx.isCrib) a.addMult(6); } },
+    { id: 'dealer', name: 'The Dealer', rarity: 1, cost: 5, text: '+8 Mult on crib counts',
+      onEnd: (a, ctx) => { if (ctx.isCrib) a.addMult(8); } },
+    { id: 'tip_jar', name: 'Tip Jar', rarity: 1, cost: 4, text: 'Earn $3 at end of each blind',
+      onBlindEnd: () => 3 },
+
+    // ---------------- Uncommon ----------------
+    { id: 'muggins', name: 'Muggins', rarity: 2, cost: 7, text: 'x2 Mult if the count is 12 or more',
+      onEnd: (a, ctx, trad) => { if (trad >= 12) a.xMult(2); } },
+    { id: 'nineteen', name: 'Nineteen', rarity: 2, cost: 6, text: 'If the count is 4 or less: +19 Points and +19 Mult',
+      onEnd: (a, ctx, trad) => { if (trad <= 4) { a.addPoints(19); a.addMult(19); } } },
+    { id: 'double_run', name: 'Double Run', rarity: 2, cost: 7, text: 'x2 Mult if 2 or more Runs score',
+      onEnd: (a, ctx, trad, self) => { if (ctx.events.filter(e => e.cat === 'run').length >= 2) a.xMult(2); } },
+    { id: 'knave', name: 'The Knave', rarity: 2, cost: 6, text: 'His Nobs and His Heels each give x3 Mult',
+      onEvent: (e, a) => { if (e.cat === 'nobs' || e.cat === 'heels') a.xMult(3); } },
+    { id: 'peg_board', name: 'Peg Board', rarity: 2, cost: 7, text: 'Gains +1 Mult for every Fifteen scored. Adds its Mult to every count.',
+      init: s => { s.m = 0; }, info: s => `(currently +${s.m} Mult)`,
+      onEvent: (e, a, ctx, self) => { if (e.cat === 'fifteen') self.state.m += 1; },
+      onEnd: (a, ctx, t, self) => { if (self.state.m) a.addMult(self.state.m); } },
+    { id: 'long_street', name: 'Long Street', rarity: 2, cost: 6, text: 'Gains +4 Points each time a Run of 4+ scores. Adds its Points to every count.',
+      init: s => { s.p = 0; }, info: s => `(currently +${s.p} Points)`,
+      onEvent: (e, a, ctx, self) => { if (e.cat === 'run' && e.cards.length >= 4) self.state.p += 4; },
+      onEnd: (a, ctx, t, self) => { if (self.state.p) a.addPoints(self.state.p); } },
+    { id: 'encore', name: 'Encore', rarity: 2, cost: 7, text: 'Runs score twice',
+      retrigger: e => (e.cat === 'run' ? 1 : 0) },
+    { id: 'echo', name: 'Echo', rarity: 2, cost: 7, text: 'Pairs score twice',
+      retrigger: e => (e.cat === 'pair' ? 1 : 0) },
+    { id: 'jack_trades', name: 'Jack of All Trades', rarity: 2, cost: 6, text: 'Jacks count as 5 for Fifteens',
+      rule: o => { const base = o.valueFn; o.valueFn = c => (c.rank === 11 ? 5 : base(c)); } },
+    { id: 'short_suit', name: 'Short Suit', rarity: 2, cost: 6, text: 'Flushes need only 3 cards. Crib flushes don\'t need the starter.',
+      rule: o => { o.flushMin = 3; o.cribFlushAny = true; } },
+    { id: 'lucky_cut', name: 'Lucky Cut', rarity: 2, cost: 6, text: '1 in 3 chance of x3 Mult',
+      onEnd: (a, ctx) => { if (ctx.rand() < 1 / 3) a.xMult(3); } },
+
+    // ---------------- Rare ----------------
+    { id: 'twenty_nine', name: 'Twenty-Nine', rarity: 3, cost: 9, text: 'Gains x0.2 Mult for every count of 12 or more. Applies its xMult to every count.',
+      init: s => { s.x = 1; }, info: s => `(currently x${s.x.toFixed(1)} Mult)`,
+      onEnd: (a, ctx, trad, self) => { if (trad >= 12) self.state.x = +(self.state.x + 0.2).toFixed(2); if (self.state.x > 1) a.xMult(self.state.x); } },
+    { id: 'skunk', name: 'The Skunk', rarity: 3, cost: 9, text: 'x3 Mult on crib counts',
+      onEnd: (a, ctx) => { if (ctx.isCrib) a.xMult(3); } },
+    { id: 'five_alive', name: 'Five Alive', rarity: 3, cost: 9, text: 'x1.5 Mult per 5 in the count',
+      onEnd: (a, ctx) => { for (const c of cardsIn(ctx)) if (c.rank === 5) a.xMult(1.5); } },
+  ];
+
+  const PEGS = ['heels', 'fifteen', 'pair', 'run', 'flush', 'nobs'].map(cat => ({ id: 'peg_' + cat, kind: 'peg', cat, cost: 3 }));
+
+  // Tricks act on cards selected in the current hand; changes are permanent to the run's deck.
+  const TRICKS = [
+    { id: 'the_fiver', name: 'The Five-Spot', kind: 'trick', cost: 3, min: 1, max: 1, text: 'Turn 1 selected card into a 5 (keeps its suit)',
+      use: (run, cards) => { cards[0].rank = 5; } },
+    { id: 'the_dye', name: 'The Dye', kind: 'trick', cost: 3, min: 2, max: 3, text: 'Up to 3 selected cards become the suit of the first selected',
+      use: (run, cards) => { for (const c of cards) c.suit = cards[0].suit; } },
+    { id: 'the_burn', name: 'The Burn', kind: 'trick', cost: 3, min: 1, max: 2, text: 'Destroy up to 2 selected cards (removed from your deck)',
+      use: (run, cards) => { for (const c of cards) c.burned = true; } },
+    { id: 'the_nudge', name: 'The Nudge', kind: 'trick', cost: 3, min: 1, max: 2, text: 'Raise up to 2 selected cards by one rank',
+      use: (run, cards) => { for (const c of cards) if (c.rank < 13) c.rank++; } },
+    { id: 'the_mirror', name: 'The Mirror', kind: 'trick', cost: 3, min: 2, max: 2, text: 'Select 2: the first becomes a copy of the second',
+      use: (run, cards) => { cards[0].rank = cards[1].rank; cards[0].suit = cards[1].suit; } },
+    { id: 'the_hustle', name: 'The Hustle', kind: 'trick', cost: 3, min: 0, max: 0, text: 'Double your money (max +$15)',
+      use: (run) => { run.money += Math.min(run.money, 15); } },
+  ];
+
+  // Boss blinds. Hooks: eligible(card, starter) -> false = debuffed; disabled categories; config overrides.
+  const BOSSES = [
+    { id: 'no_nobs', name: 'No Nobs', text: 'Jacks are debuffed', eligible: c => c.rank !== 11 },
+    { id: 'dry_crib', minAnte: 2, name: 'The Dry Crib', text: 'The crib is not counted', noCrib: true },
+    { id: 'lowball', minAnte: 2, name: 'The Lowball', text: 'Face cards are debuffed', eligible: c => c.rank < 11 },
+    { id: 'short_deal', minAnte: 2, name: 'The Short Deal', text: 'Only 3 deals', deals: 3 },
+    { id: 'tight', name: 'The Tight Fist', text: 'No swaps', swaps: 0 },
+    { id: 'blind_cut', minAnte: 2, name: 'The Blind Cut', text: 'The starter card is debuffed', eligibleStarter: false },
+    { id: 'fives_out', minAnte: 2, name: 'Fives Out', text: 'All 5s are debuffed', eligible: c => c.rank !== 5 },
+    { id: 'no_fifteens', minAnte: 2, name: 'The Fourteen', text: 'Fifteens don\'t score', disabled: ['fifteen'] },
+    { id: 'suit_hearts', minAnte: 2, name: 'The Broken Heart', text: 'All ♥ cards are debuffed', eligible: c => c.suit !== 1 },
+    { id: 'plain_deal', name: 'The Plain Deal', text: 'Flushes, His Nobs and His Heels don\'t score', disabled: ['flush', 'nobs', 'heels'] },
+    { id: 'no_pairs', name: 'The Odd Man', text: 'Pairs don\'t score', disabled: ['pair'] },
+    { id: 'suit_clubs', minAnte: 2, name: 'The Club', text: 'All ♣ cards are debuffed', eligible: c => c.suit !== 3 },
+  ];
+
+  const byId = {};
+  for (const x of [...KIBITZERS, ...PEGS, ...TRICKS]) byId[x.id] = x;
+  return { KIBITZERS, PEGS, TRICKS, BOSSES, byId };
+})();
+if (typeof module !== 'undefined') module.exports = Content;
+
+
+</script>
+<script>// Run / blind / shop state machine. No DOM. The prototype UI and the balance bot both drive this.
+const Game = (() => {
+  'use strict';
+  const E = typeof Engine !== 'undefined' ? Engine : require('./engine.js');
+  const C = typeof Content !== 'undefined' ? Content : require('./content.js');
+
+  const CONFIG = {
+    antes: 8,
+    anteBase: [30, 110, 260, 600, 1300, 2600, 5000, 8000],
+    blindMult: [1, 1.5, 2],
+    blindNames: ['Small Blind', 'Big Blind', 'Boss'],
+    blindReward: [3, 4, 5],
+    deals: 4, swaps: 3, swapMax: 4,
+    startMoney: 4, interestPer: 5, interestCap: 5,
+    kibSlots: 5, consSlots: 2,
+    shopKibs: 2, shopCons: 2, rerollBase: 5,
+    rarityWeights: [0, 70, 25, 5],
+    pegChance: 0.6,
+  };
+  // Not tuning: the fewest live cards a deal can run on (6 to the hand, 2 House cards, 1 starter). The Burn may not
+  // take the deck below it (B6). Any higher floor is a design call (Beff's), not this constant.
+  const MIN_LIVE = 6 + 2 + 1;
+  // Hint internals (not game rules): crib samples per throw, each a (House pair, starter) draw from the unseen cards.
+  const HINT_CRIB_SAMPLES = 128;
+
+  function newRun(seed) {
+    seed = seed == null ? (Math.random() * 2 ** 32) >>> 0 : seed >>> 0;
+    const rand = E.makeRng(seed);
+    const run = {
+      seed, rand, cfg: CONFIG,
+      deck: E.makeDeck(), nextCardId: 52,
+      money: CONFIG.startMoney, ante: 1, blindIdx: 0,
+      kibitzers: [], consumables: [],
+      levels: { heels: 1, fifteen: 1, pair: 1, run: 1, flush: 1, nobs: 1 },
+      bossPool: [], bosses: {}, blind: null, shop: null, over: false, won: false,
+      stats: { bestCount: 0, deals: 0 },
+    };
+    run.bosses[1] = pickBoss(run, 1);
+    return run;
+  }
+
+  // Balatro-style: a shuffled bag so bosses don't repeat; harsh bosses have a minimum ante.
+  function pickBoss(run, ante) {
+    const ok = b => (b.minAnte || 1) <= ante;
+    if (!run.bossPool.some(ok)) run.bossPool = E.shuffle(C.BOSSES.slice(), run.rand);
+    const i = run.bossPool.findIndex(ok);
+    return run.bossPool.splice(i, 1)[0];
+  }
+
+  function blindTarget(ante, idx) { return Math.round(CONFIG.anteBase[ante - 1] * CONFIG.blindMult[idx]); }
+
+  function makeKib(def) {
+    const k = Object.assign({}, def, { uid: Math.random().toString(36).slice(2), state: {} });
+    if (def.init) def.init(k.state);
+    return k;
+  }
+
+  // ---------------- Blind ----------------
+  function startBlind(run) {
+    const idx = run.blindIdx;
+    const boss = idx === 2 ? run.bosses[run.ante] : null;
+    const pile = E.shuffle(run.deck.filter(c => !c.burned), run.rand);
+    run.blind = {
+      idx, name: boss ? boss.name : CONFIG.blindNames[idx], boss,
+      target: blindTarget(run.ante, idx), score: 0,
+      deals: boss && boss.deals != null ? boss.deals : CONFIG.deals,
+      swaps: boss && boss.swaps != null ? boss.swaps : CONFIG.swaps,
+      pile, used: [], hand: [], history: [], phase: 'select',
+    };
+    deal(run);
+    return run.blind;
+  }
+
+  function draw(run, n) {
+    const b = run.blind, out = [];
+    for (let i = 0; i < n; i++) {
+      if (!b.pile.length) { b.pile = E.shuffle(b.used.filter(c => !c.burned), run.rand); b.used = []; }
+      if (!b.pile.length) break; // deck exhausted (only possible with extreme burning)
+      out.push(b.pile.pop());
+    }
+    return out;
+  }
+
+  function deal(run) {
+    const b = run.blind;
+    b.hand = draw(run, 6);
+    b.phase = 'select';
+  }
+
+  function swap(run, idxs) {
+    const b = run.blind;
+    if (b.swaps <= 0 || !idxs.length || idxs.length > CONFIG.swapMax) return false;
+    const out = idxs.map(i => b.hand[i]);
+    b.used.push(...out);
+    const fresh = draw(run, out.length);
+    let f = 0;
+    b.hand = b.hand.map((c, i) => (idxs.includes(i) ? fresh[f++] : c)).filter(Boolean);
+    b.swaps--;
+    return true;
+  }
+
+  // dry evaluation never touches the run's stream or Math.random (B4): a passed rng function, else a fixed stream.
+  function scoringCtx(run, isCrib, cards, starter, events, eligible, dry) {
+    const rand = !dry ? run.rand : typeof dry === 'function' ? dry : E.makeRng(0x9e3779b9);
+    return { levels: run.levels, kibitzers: run.kibitzers, isCrib, cards, starter, events, eligible, rand, run, dry: !!dry };
+  }
+
+  // dry = evaluation only (hint / AI): don't consume the run's RNG stream. dry may be an rng function for chance effects.
+  function countOne(run, hand4, starter, isCrib, dry) {
+    const boss = run.blind.boss || {};
+    const opts = { heels: true, valueFn: E.value, disabled: new Set(boss.disabled || []) };
+    for (const k of run.kibitzers) if (k.rule) k.rule(opts);
+    const debuffed = c => (boss.eligible && !boss.eligible(c)) || (boss.eligibleStarter === false && c === starter);
+    opts.eligible = c => !debuffed(c);
+    const events = E.findEvents(hand4, starter, isCrib, opts);
+    const ctx = scoringCtx(run, isCrib, hand4.concat([starter]), starter, events, opts.eligible, dry);
+    const res = E.resolve(events, ctx);
+    res.debuffed = hand4.concat([starter]).filter(debuffed).map(c => c.id);
+    return res;
+  }
+
+  // throwIdx: two indices of b.hand going to the crib.
+  function throwAndCount(run, throwIdx) {
+    const b = run.blind;
+    if (throwIdx.length !== 2 || b.hand.length < 6) return null;
+    const keep = b.hand.filter((_, i) => !throwIdx.includes(i));
+    const thrown = throwIdx.map(i => b.hand[i]);
+    const house = draw(run, 2);
+    const starter = draw(run, 1)[0];
+    const crib = thrown.concat(house);
+    const handRes = countOne(run, keep, starter, false);
+    const cribRes = b.boss && b.boss.noCrib ? null : countOne(run, crib, starter, true);
+    const gained = handRes.total + (cribRes ? cribRes.total : 0);
+    run.money += handRes.money + (cribRes ? cribRes.money : 0);
+    b.score += gained;
+    b.deals--;
+    b.used.push(...keep, ...crib, starter);
+    run.stats.deals++;
+    run.stats.bestCount = Math.max(run.stats.bestCount, handRes.total, cribRes ? cribRes.total : 0);
+    const rec = { keep, thrown, house, crib, starter, handRes, cribRes, gained };
+    b.history.push(rec);
+    if (b.score >= b.target) b.phase = 'won';
+    else if (b.deals <= 0) { b.phase = 'lost'; run.over = true; }
+    else b.phase = 'counted';
+    return rec;
+  }
+
+  function nextDeal(run) { if (run.blind.phase === 'counted') deal(run); }
+
+  function cashOut(run) {
+    const b = run.blind;
+    const lines = [{ label: `${b.name} cleared`, amt: CONFIG.blindReward[b.idx] }];
+    if (b.deals) lines.push({ label: `${b.deals} unused deal${b.deals > 1 ? 's' : ''}`, amt: b.deals });
+    const interest = Math.min(Math.floor(run.money / CONFIG.interestPer), CONFIG.interestCap);
+    if (interest) lines.push({ label: `Interest ($1 per $${CONFIG.interestPer}, max ${CONFIG.interestCap})`, amt: interest });
+    for (const k of run.kibitzers) if (k.onBlindEnd) { const m = k.onBlindEnd(run, k); if (m) lines.push({ label: k.name, amt: m }); }
+    const total = lines.reduce((a, l) => a + l.amt, 0);
+    run.money += total;
+    // advance
+    if (b.idx === 2) {
+      if (run.ante >= CONFIG.antes) { run.won = true; run.over = true; }
+      run.ante++; run.blindIdx = 0;
+      if (!run.over) run.bosses[run.ante] = pickBoss(run, run.ante);
+    } else run.blindIdx++;
+    run.blind = null;
+    return { lines, total, interest }; // interest: for the per-run record (src/record.js)
+  }
+
+  // ---------------- Shop ----------------
+  function rollKib(run) {
+    const owned = new Set(run.kibitzers.map(k => k.id));
+    const w = CONFIG.rarityWeights;
+    let r = run.rand() * (w[1] + w[2] + w[3]);
+    const rarity = r < w[1] ? 1 : r < w[1] + w[2] ? 2 : 3;
+    let pool = C.KIBITZERS.filter(k => k.rarity === rarity && !owned.has(k.id));
+    if (!pool.length) pool = C.KIBITZERS.filter(k => !owned.has(k.id));
+    return pool.length ? pool[(run.rand() * pool.length) | 0] : null;
+  }
+  function rollCons(run) {
+    if (run.rand() < CONFIG.pegChance) return C.PEGS[(run.rand() * C.PEGS.length) | 0];
+    return C.TRICKS[(run.rand() * C.TRICKS.length) | 0];
+  }
+  function fillShop(run) {
+    const s = run.shop;
+    const seen = new Set();
+    s.kibs = [];
+    for (let i = 0; i < CONFIG.shopKibs; i++) {
+      let k, tries = 0;
+      do { k = rollKib(run); tries++; } while (k && seen.has(k.id) && tries < 20);
+      if (k) { seen.add(k.id); s.kibs.push(k); }
+    }
+    s.cons = [];
+    for (let i = 0; i < CONFIG.shopCons; i++) s.cons.push(rollCons(run));
+  }
+  function openShop(run) {
+    run.shop = { rerollCost: CONFIG.rerollBase, kibs: [], cons: [] };
+    fillShop(run);
+    return run.shop;
+  }
+  function reroll(run) {
+    const s = run.shop;
+    if (run.money < s.rerollCost) return false;
+    run.money -= s.rerollCost; s.rerollCost++;
+    fillShop(run);
+    return true;
+  }
+  function buyKib(run, i) {
+    const def = run.shop.kibs[i];
+    if (!def || run.money < def.cost || run.kibitzers.length >= CONFIG.kibSlots) return false;
+    run.money -= def.cost;
+    run.kibitzers.push(makeKib(def));
+    run.shop.kibs.splice(i, 1);
+    return true;
+  }
+  function buyCons(run, i, useNow) {
+    const def = run.shop.cons[i];
+    if (!def || run.money < def.cost) return false;
+    if (useNow && def.kind === 'peg') {
+      run.money -= def.cost; usePeg(run, def); run.shop.cons.splice(i, 1); return true;
+    }
+    if (run.consumables.length >= CONFIG.consSlots) return false;
+    run.money -= def.cost;
+    run.consumables.push(def);
+    run.shop.cons.splice(i, 1);
+    return true;
+  }
+  function sellValue(item) { return Math.max(1, Math.floor(item.cost / 2)); }
+  function sellKib(run, i) { const k = run.kibitzers.splice(i, 1)[0]; if (k) run.money += sellValue(k); return !!k; }
+  function sellCons(run, i) { const c = run.consumables.splice(i, 1)[0]; if (c) run.money += sellValue(c); return !!c; }
+  function moveKib(run, from, to) {
+    const [k] = run.kibitzers.splice(from, 1); run.kibitzers.splice(to, 0, k);
+  }
+
+  function usePeg(run, def) { run.levels[def.cat]++; }
+
+  // Use a consumable from slots. selIdx: indices into the current blind hand (tricks only).
+  function useCons(run, i, selIdx = []) {
+    const def = run.consumables[i];
+    if (!def) return { ok: false, why: 'none' };
+    if (def.kind === 'peg') { usePeg(run, def); run.consumables.splice(i, 1); return { ok: true }; }
+    if (def.max > 0) {
+      if (!run.blind || run.blind.phase !== 'select') return { ok: false, why: 'Use Tricks while you hold cards.' };
+      if (selIdx.length < def.min || selIdx.length > def.max) return { ok: false, why: `Select ${def.min === def.max ? def.min : def.min + '–' + def.max} card${def.max > 1 ? 's' : ''}.` };
+    }
+    // B6: a deal needs MIN_LIVE cards (6 hand, 2 House, 1 starter); below that the blind cannot deal. Engine floor only.
+    if (def.id === 'the_burn' && run.deck.filter(c => !c.burned).length - selIdx.length < MIN_LIVE)
+      return { ok: false, why: `Your deck can't go below ${MIN_LIVE} cards.` };
+    const cards = selIdx.map(k => run.blind.hand[k]);
+    def.use(run, cards);
+    if (run.blind && cards.some(c => c.burned)) {
+      run.blind.used.push(...cards.filter(c => c.burned));
+      run.blind.hand = run.blind.hand.filter(c => !c.burned);
+      const refill = draw(run, 6 - run.blind.hand.length);
+      run.blind.hand.push(...refill);
+    }
+    run.consumables.splice(i, 1);
+    return { ok: true };
+  }
+
+  // B1 fix (gamedev 2026-11-21): after the Ante 8 boss is cashed out, run.ante is 9 and no boss is picked for it.
+  // Every render calls this, so it must not throw on a finished run.
+  function nextBlindInfo(run) {
+    const boss = run.bosses[run.ante];
+    const live = run.ante <= CONFIG.antes;
+    return [0, 1, 2].map(i => ({
+      idx: i, name: i === 2 ? (boss ? boss.name : '—') : CONFIG.blindNames[i],
+      text: i === 2 && boss ? boss.text : '',
+      target: live ? blindTarget(run.ante, i) : 0, reward: CONFIG.blindReward[i],
+    }));
+  }
+
+  // Build-aware throw advisor (the Hint, and the aware sim bot). Fixed 2026-11-21 (gamedev):
+  // B4  Chance effects (Lucky Cut) draw from seeded streams that restart for every throw, so the advice is the same on
+  //     every press and every throw sees the same luck (fair comparison). Never Math.random, never the run's stream.
+  // B4b Scaling Kibitzers (Peg Board, Long Street, Twenty-Nine) change their state while counting. The old search let
+  //     that state build up across all 690 dry counts, so throws searched later looked far better. Each dry count now
+  //     starts from the real state.
+  // B5  The crib is counted through the full scorer (levels, Kibitzers, boss debuffs, crib-only and hand-only effects)
+  //     over HINT_CRIB_SAMPLES (House pair, starter) draws, the same draws for every throw. Starters and House cards
+  //     come from the cards not yet seen this blind (the pile), not from cards already played.
+  function adviseThrow(run) {
+    const b = run.blind, six = b.hand;
+    if (six.length < 6) return null;
+    const snap = run.kibitzers.map(k => JSON.stringify(k.state));
+    const dry = (cards, s, isCrib, rng) => {
+      run.kibitzers.forEach((k, n) => { k.state = JSON.parse(snap[n]); });
+      return countOne(run, cards, s, isCrib, rng).total;
+    };
+    const pool = hintPool(run);
+    const noCrib = b.boss && b.boss.noCrib;
+    // One hash of the hand (order-free) and the blind's position seeds every stream: same hand, same advice.
+    let h = (run.seed ^ 0x2545f491) >>> 0;
+    for (const id of six.map(c => c.id).sort((x, y) => x - y)) h = Math.imul(h ^ id, 0x01000193) >>> 0;
+    h = (h ^ (b.deals * 131 + b.swaps * 17 + b.score)) >>> 0;
+    const samples = [];
+    if (!noCrib && pool.length >= 3) {
+      const pick = E.makeRng(h ^ 0x68e31da4);
+      for (let n = 0; n < HINT_CRIB_SAMPLES; n++) {
+        const tmp = pool.slice();
+        for (let k = 0; k < 3; k++) { const j = k + ((pick() * (tmp.length - k)) | 0); const t = tmp[k]; tmp[k] = tmp[j]; tmp[j] = t; }
+        samples.push(tmp.slice(0, 3));
+      }
+    }
+    let best = null;
+    const all = [];
+    for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
+      const keep = six.filter((_, k) => k !== i && k !== j);
+      const handRng = E.makeRng(h ^ 0x1b873593);
+      let sum = 0;
+      for (const s of pool) sum += dry(keep, s, false, handRng);
+      const handEv = pool.length ? sum / pool.length : 0;
+      let cribEv = 0;
+      if (samples.length) {
+        const cribRng = E.makeRng(h ^ 0xcc9e2d51);
+        let cs = 0;
+        for (const [h1, h2, s] of samples) cs += dry([six[i], six[j], h1, h2], s, true, cribRng);
+        cribEv = cs / samples.length;
+      }
+      const rec = { throwIdx: [i, j], handEv, cribEv, total: handEv + cribEv };
+      all.push(rec);
+      if (!best || rec.total > best.total) best = rec;
+    }
+    run.kibitzers.forEach((k, n) => { k.state = JSON.parse(snap[n]); });
+    all.sort((x, y) => y.total - x.total);
+    return { best, all, pool: pool.length, cribSamples: samples.length };
+  }
+
+  // Cards the next House pair and starter can come from: the pile, when it can supply all three; otherwise the draw
+  // will reshuffle, so every live card outside the hand.
+  function hintPool(run) {
+    const b = run.blind;
+    return b.pile.length >= 3 ? b.pile.slice() : unseenFor(run);
+  }
+
+  // ---------------- Save / restore (hot reload, future save files) ----------------
+  // v2 (2026-11-21, gamedev; B2/B3): the save also holds the RNG stream's position, the blind in progress (cards by id)
+  // and the open shop, so a reload continues exactly where the player was: no free retry, no restock, same run as
+  // playing straight through. v1 saves still load (blind restarts, stream reseeded), as before.
+  function serialize(run) {
+    const b = run.blind, s = run.shop, ids = cs => cs.map(c => c.id);
+    return {
+      v: 2, seed: run.seed, rng: run.rand.state(), deck: run.deck, money: run.money, ante: run.ante, blindIdx: run.blindIdx,
+      kibitzers: run.kibitzers.map(k => ({ id: k.id, state: k.state })),
+      consumables: run.consumables.map(c => c.id), levels: run.levels,
+      bossPool: run.bossPool.map(b => b.id), bosses: Object.fromEntries(Object.entries(run.bosses).map(([a, b]) => [a, b.id])),
+      over: run.over, won: run.won, stats: run.stats,
+      blind: b ? {
+        idx: b.idx, name: b.name, boss: b.boss ? b.boss.id : null, target: b.target, score: b.score,
+        deals: b.deals, swaps: b.swaps, phase: b.phase, pile: ids(b.pile), used: ids(b.used), hand: ids(b.hand),
+      } : null,
+      shop: s ? { rerollCost: s.rerollCost, kibs: s.kibs.map(k => k.id), cons: s.cons.map(c => c.id) } : null,
+    };
+  }
+  function deserialize(o) {
+    const bossById = Object.fromEntries(C.BOSSES.map(b => [b.id, b]));
+    const run = newRun(o.seed);
+    run.rand = o.rng != null ? E.makeRng(o.rng) : E.makeRng((o.seed ^ (o.ante * 7919 + o.blindIdx * 104729 + o.money * 31)) >>> 0);
+    Object.assign(run, { deck: o.deck, money: o.money, ante: o.ante, blindIdx: o.blindIdx, levels: o.levels, over: o.over, won: o.won, stats: o.stats });
+    run.kibitzers = o.kibitzers.filter(k => C.byId[k.id]).map(k => { const x = makeKib(C.byId[k.id]); x.state = k.state; return x; });
+    run.consumables = o.consumables.map(id => C.byId[id]).filter(Boolean);
+    run.bossPool = o.bossPool.map(id => bossById[id]).filter(Boolean);
+    run.bosses = Object.fromEntries(Object.entries(o.bosses).map(([a, id]) => [a, bossById[id]]));
+    if (o.blind) { // cards by id, so the blind's cards are the deck's own objects again (Tricks change them in place)
+      const byId = new Map(run.deck.map(c => [c.id, c]));
+      const cards = a => a.map(id => byId.get(id)).filter(Boolean);
+      const x = o.blind;
+      run.blind = {
+        idx: x.idx, name: x.name, boss: x.boss ? bossById[x.boss] || null : null, target: x.target, score: x.score,
+        deals: x.deals, swaps: x.swaps, pile: cards(x.pile), used: cards(x.used), hand: cards(x.hand), history: [], phase: x.phase,
+      };
+    }
+    if (o.shop) {
+      run.shop = { rerollCost: o.shop.rerollCost, kibs: o.shop.kibs.map(id => C.byId[id]).filter(Boolean), cons: o.shop.cons.map(id => C.byId[id]).filter(Boolean) };
+    }
+    return run;
+  }
+
+  function unseenFor(run) {
+    const inHand = new Set(run.blind.hand.map(c => c.id));
+    return run.deck.filter(c => !c.burned && !inHand.has(c.id));
+  }
+
+  return {
+    CONFIG, MIN_LIVE, HINT_CRIB_SAMPLES, newRun, startBlind, swap, throwAndCount, nextDeal, cashOut,
+    openShop, reroll, buyKib, buyCons, sellKib, sellCons, sellValue, moveKib, useCons,
+    nextBlindInfo, blindTarget, unseenFor, makeKib, countOne, adviseThrow, serialize, deserialize,
+  };
+})();
+if (typeof module !== 'undefined') module.exports = Game;
+
+
+</script>
+<script>// Per-run record for playtesting (gamedev, 2026-11-21). No DOM: ui.js calls these hooks and stores the result;
+// Node can load it for tests. Field list: playtester's mail 2026-11-21-playtester-pegged-record-fields.md,
+// deviations and definitions in design/gdd/run-record.md.
+// One record object per run. Cards are written as "<id>:<label>" (e.g. "37:5♣") because Tricks change a card's
+// rank or suit in place, so an id alone does not say what the card was at the time.
+const Record = (() => {
+  'use strict';
+  const E = typeof Engine !== 'undefined' ? Engine : require('./engine.js');
+
+  const RECORD_VERSION = 1;
+  const BUILD_ID = 'pegged-src-2026-11-21-r2'; // bump by hand on every change to src/ (no build step hashes files yet)
+  const MAX_ERRORS = 50;
+
+  const today = () => new Date().toISOString().slice(0, 10);
+  const clone = o => (o == null ? o : JSON.parse(JSON.stringify(o)));
+  const card = c => (c ? `${c.id}:${E.label(c)}` : null);
+  const cards = cs => (cs || []).filter(Boolean).map(card);
+  const kibList = run => run.kibitzers.map(k => ({ id: k.id, state: clone(k.state) || {} }));
+  const liveDeck = run => run.deck.filter(c => !c.burned).length;
+  const lastBlind = rec => rec.blinds[rec.blinds.length - 1] || null;
+  const openShop = rec => { const s = rec.shops[rec.shops.length - 1]; return s && s.moneyAfter == null ? s : null; };
+  const offerOf = shop => ({
+    kibitzers: shop.kibs.map(k => ({ id: k.id, price: k.cost })),
+    consumables: shop.cons.map(c => ({ id: c.id, price: c.cost })),
+  });
+  const freshDeal = () => ({ swapsBefore: 0, hintUsed: false, hintRecommendedThrow: null, trickUsed: [], pegUsed: [] });
+
+  // mode: "new" | "replay-seed" (a typed seed also counts as replay-seed)
+  function begin(run, mode) {
+    return {
+      recordVersion: RECORD_VERSION, buildId: BUILD_ID, seed: run.seed,
+      startedAt: today(), endedOn: null, mode: mode || 'new', rulesetFlags: {},
+      startedMidRun: false,
+      result: 'in-progress', endedAt: null, cause: null, finalMoney: null, finalShopVisits: 0,
+      blinds: [], shops: [], rackLog: [], consumableLog: [],
+      kibitzersAtEnd: null, levelsAtEnd: null, consumablesHeld: null, deckSize: null,
+      hintsUsed: 0, hintsWhileLuckyCut: 0, reloads: 0, reloadsMidBlind: 0, reloadsInShop: 0,
+      animationSkips: 0, errors: [], note: '',
+      lastScreen: 'blinds', open: freshDeal(),
+    };
+  }
+
+  // A save from before the record existed: start a record now and say so.
+  function beginMidRun(run) {
+    const rec = begin(run, 'new');
+    rec.startedMidRun = true;
+    return rec;
+  }
+
+  function where(run) {
+    return { ante: Math.min(run.ante, run.cfg.antes), blindIndex: run.blind ? run.blind.idx : Math.min(run.blindIdx, 2) };
+  }
+
+  function blindStart(rec, run, speed) {
+    const b = run.blind;
+    rec.blinds.push({
+      ante: run.ante, blindIndex: b.idx, blindName: b.name,
+      bossRule: b.boss ? b.boss.id : null, bossName: b.boss ? b.boss.name : null,
+      target: b.target, finalScore: 0, cleared: false, restartedByReload: false,
+      dealsUsed: 0, swapsUsed: 0, dealsAvailable: b.deals, swapsAvailable: b.swaps,
+      scorePerDeal: [], deals: [],
+      moneyAtStart: run.money, moneyAtEnd: null, interestPaid: null, cashOutTotal: null,
+      kibitzersAtStart: kibList(run), levelsAtStart: clone(run.levels),
+      speedSetting: speed, feel: null,
+    });
+    rec.open = freshDeal();
+  }
+
+  function swap(rec) {
+    const bl = lastBlind(rec); if (bl) bl.swapsUsed++;
+    rec.open.swapsBefore++;
+    rec.open.hintRecommendedThrow = null; // the hand changed; an earlier hint no longer applies
+  }
+
+  function hint(rec, run, advice) {
+    rec.hintsUsed++;
+    if (run.kibitzers.some(k => k.id === 'lucky_cut')) rec.hintsWhileLuckyCut++;
+    rec.open.hintUsed = true;
+    if (advice && advice.best) rec.open.hintRecommendedThrow = cards(advice.best.throwIdx.map(i => run.blind.hand[i]));
+  }
+
+  // dealRec: the object Game.throwAndCount returned.
+  function dealt(rec, run, dealRec) {
+    const bl = lastBlind(rec), b = run.blind, o = rec.open;
+    const thrown = cards(dealRec.thrown);
+    const rcm = o.hintRecommendedThrow;
+    const followed = rcm ? rcm.length === thrown.length && rcm.every(x => thrown.includes(x)) : null;
+    const handScore = dealRec.handRes.total, cribScore = dealRec.cribRes ? dealRec.cribRes.total : null;
+    if (bl) {
+      bl.deals.push({
+        keep: cards(dealRec.keep), thrown, house: cards(dealRec.house), starter: card(dealRec.starter),
+        whoseCrib: dealRec.cribRes ? 'player' : 'none',
+        handScore, cribScore, gained: dealRec.gained,
+        hintUsed: o.hintUsed, hintRecommendedThrow: rcm, followedHint: followed,
+        swapsBefore: o.swapsBefore, trickUsed: o.trickUsed.slice(), pegUsed: o.pegUsed.slice(),
+      });
+      bl.scorePerDeal.push({ hand: handScore, crib: cribScore || 0, total: dealRec.gained });
+      bl.dealsUsed++;
+      bl.finalScore = b.score;
+      bl.cleared = b.phase === 'won';
+    }
+    rec.open = freshDeal();
+    if (b.phase === 'lost') finish(rec, run, 'lost');
+  }
+
+  function cashOut(rec, run, cash) {
+    const bl = lastBlind(rec);
+    if (bl) { bl.cleared = true; bl.moneyAtEnd = run.money; bl.interestPaid = cash.interest || 0; bl.cashOutTotal = cash.total; }
+    if (run.won) finish(rec, run, 'won');
+  }
+
+  function shopOpen(rec, run) {
+    const bl = lastBlind(rec);
+    rec.shops.push({
+      ante: bl ? bl.ante : run.ante, blindIndex: bl ? bl.blindIndex : null,
+      offered: [offerOf(run.shop)], bought: [], sold: [], rerolls: 0, trickOrPegUsed: [],
+      moneyBefore: run.money, moneyAfter: null, kibitzerOrderAfter: null, reorders: 0,
+    });
+  }
+  function reroll(rec, run) { const s = openShop(rec); if (s) { s.rerolls++; s.offered.push(offerOf(run.shop)); } }
+  function bought(rec, def, usedNow) {
+    const s = openShop(rec); if (!s) return;
+    s.bought.push({ id: def.id, price: def.cost, usedNow: !!usedNow });
+    if (usedNow) s.trickOrPegUsed.push(def.id);
+  }
+  function shopClose(rec, run) {
+    const s = openShop(rec); if (!s) return;
+    s.moneyAfter = run.money;
+    s.kibitzerOrderAfter = kibList(run);
+  }
+
+  // Sells and reorders can happen on any screen with the rack; inside the shop they go on the visit.
+  function sold(rec, run, item, value, screen) {
+    const s = screen === 'shop' ? openShop(rec) : null;
+    if (s) s.sold.push({ id: item.id, value });
+    else rec.rackLog.push(Object.assign({ act: 'sell', id: item.id, value, screen }, where(run)));
+  }
+  function reordered(rec, run, screen) {
+    const s = screen === 'shop' ? openShop(rec) : null;
+    if (s) s.reorders++;
+    else rec.rackLog.push(Object.assign({ act: 'move', order: run.kibitzers.map(k => k.id), screen }, where(run)));
+  }
+
+  function consumableUsed(rec, run, def, screen) {
+    rec.consumableLog.push(Object.assign({ id: def.id, kind: def.kind, screen }, where(run)));
+    if (screen === 'shop') { const s = openShop(rec); if (s) s.trickOrPegUsed.push(def.id); return; }
+    if (screen === 'play') (def.kind === 'peg' ? rec.open.pegUsed : rec.open.trickUsed).push(def.id);
+  }
+
+  function skip(rec) { rec.animationSkips++; }
+
+  function error(rec, run, message, phase) {
+    if (rec.errors.length >= MAX_ERRORS) return;
+    const w = run ? where(run) : { ante: null, blindIndex: null };
+    rec.errors.push(Object.assign({ message: String(message).slice(0, 300), phase: phase || null }, w));
+  }
+
+  // Called once per page load that restored a save. lastScreen = the screen the record saw before the reload.
+  // blindKept: the save held the blind in progress (save v2, B2 fixed), so play continued and nothing restarted.
+  // Without it (a v1 save) the blind restarts from blind select and is marked restartedByReload.
+  function reloaded(rec, blindKept) {
+    rec.reloads++;
+    if (rec.lastScreen === 'play') {
+      rec.reloadsMidBlind++;
+      const bl = lastBlind(rec);
+      if (bl && !bl.cleared && !blindKept) bl.restartedByReload = true;
+    } else if (rec.lastScreen === 'shop' || rec.lastScreen === 'cashout') rec.reloadsInShop++;
+    rec.open = freshDeal();
+  }
+
+  function setFeel(rec, value) {
+    const bl = lastBlind(rec); if (!bl) return;
+    bl.feel = bl.feel === value ? null : value;
+  }
+
+  // result: "won" | "lost" | "abandoned"
+  function finish(rec, run, result) {
+    if (rec.result !== 'in-progress') return;
+    const bl = lastBlind(rec);
+    rec.result = result;
+    rec.endedOn = today();
+    rec.cause = result === 'won' ? 'won' : result === 'lost' ? 'out-of-deals' : null;
+    rec.endedAt = bl ? { ante: bl.ante, blindIndex: bl.blindIndex, blindName: bl.blindName, bossName: bl.bossName } : null;
+    rec.finalMoney = run.money;
+    rec.finalShopVisits = rec.shops.length;
+    rec.kibitzersAtEnd = kibList(run);
+    rec.levelsAtEnd = clone(run.levels);
+    rec.consumablesHeld = run.consumables.map(c => c.id);
+    rec.deckSize = liveDeck(run);
+  }
+
+  return {
+    RECORD_VERSION, BUILD_ID, begin, beginMidRun, blindStart, swap, hint, dealt, cashOut,
+    shopOpen, reroll, bought, shopClose, sold, reordered, consumableUsed, skip, error, reloaded, setFeel, finish,
+  };
+})();
+if (typeof module !== 'undefined') module.exports = Record;
+
+</script>
+<script>// Prototype UI. Deliberately thin: every rule lives in engine/content/game.
+(() => {
+  'use strict';
+  const E = Engine, C = Content, G = Game, R = Record;
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = n => (Number.isInteger(n) ? n.toLocaleString() : (+n.toFixed(2)).toLocaleString());
+
+  const ui = {
+    run: null, screen: 'blinds', sel: new Set(), selKib: -1, selCons: -1,
+    speed: 1, animating: false, skip: false, last: null, msg: '', hint: null,
+    disp: { points: 0, mult: 1, total: '', narr: '' }, cash: null, backPeg: 0, frontPeg: 0, overlay: null,
+    zoneCards: null, // cards shown during count: { keep, crib, starter, houseHidden }
+    rec: null, // this run's record (src/record.js); finished records live in localStorage 'pegged.records'
+  };
+  try { ui.speed = +localStorage.getItem('pegged.speed') || 1; } catch (e) { /* storage unavailable */ }
+
+  // ---------------- Rendering helpers ----------------
+  const isRed = c => c.suit === 1 || c.suit === 2;
+  function cardHTML(c, opts = {}) {
+    if (!c) return `<div class="card ghost" aria-hidden="true"></div>`;
+    if (opts.back) return `<div class="card back" aria-label="Face-down card"></div>`;
+    const cls = ['card', isRed(c) ? 'red' : '', opts.sel ? 'sel' : '', opts.hint ? 'hint' : '', opts.debuff ? 'debuff' : '', opts.flip ? 'flip' : ''].join(' ');
+    const lbl = `${E.RANK_LABEL[c.rank]} of ${['spades', 'hearts', 'diamonds', 'clubs'][c.suit]}`;
+    const tag = opts.idx != null ? 'button' : 'div';
+    return `<${tag} class="${cls}" data-cid="${c.id}" ${opts.idx != null ? `data-idx="${opts.idx}" aria-pressed="${!!opts.sel}"` : ''} aria-label="${lbl}">
+      <span class="rk">${E.RANK_LABEL[c.rank]}</span><span class="st">${E.SUIT_GLYPH[c.suit]}</span>
+      <span class="big">${E.SUIT_GLYPH[c.suit]}</span><span class="val">${E.value(c)}</span></${tag}>`;
+  }
+  function isDebuffed(c) {
+    const b = ui.run.blind && ui.run.blind.boss;
+    return !!(b && b.eligible && !b.eligible(c));
+  }
+  function kibHTML(k, i, opts = {}) {
+    const info = k.info && k.state ? `<span class="ki">${esc(k.info(k.state))}</span>` : '';
+    const sel = opts.selectable && ui.selKib === i;
+    const actions = sel ? `<span class="item-actions">
+        <span class="btn small" role="button" tabindex="0" data-act="kib-left" ${i === 0 ? 'aria-disabled="true"' : ''}>◀</span>
+        <span class="btn small" role="button" tabindex="0" data-act="kib-right">▶</span>
+        <span class="btn small red" role="button" tabindex="0" data-act="kib-sell">Sell $${G.sellValue(k)}</span></span>` : '';
+    return `<button class="kib r${k.rarity}${sel ? ' sel' : ''}" data-uid="${k.uid || ''}" ${opts.selectable ? `data-kib="${i}"` : ''} aria-label="${esc(k.name)}: ${esc(k.text)}">
+      <span class="kn">${esc(k.name)}</span><span class="kt">${esc(k.text)}</span>${info}${actions}</button>`;
+  }
+  function consInfo(d) {
+    if (d.kind === 'peg') {
+      const cat = E.CATEGORIES[d.cat], lv = ui.run.levels[d.cat];
+      return { name: `${cat.name} Peg`, text: `Level up ${cat.name} (Lv ${lv}→${lv + 1}): +${cat.lvPts} Points per ${cat.short.toLowerCase()}, +${cat.lvMult} Mult` };
+    }
+    return { name: d.name, text: d.text };
+  }
+  function consHTML(d, i, opts = {}) {
+    const inf = consInfo(d);
+    const sel = opts.selectable && ui.selCons === i;
+    const actions = sel ? `<span class="item-actions">
+        <span class="btn small blue" role="button" tabindex="0" data-act="cons-use">Use</span>
+        <span class="btn small red" role="button" tabindex="0" data-act="cons-sell">Sell $${G.sellValue(d)}</span></span>` : '';
+    return `<button class="cons ${d.kind}${sel ? ' sel' : ''}" ${opts.selectable ? `data-cons="${i}"` : ''} aria-label="${esc(inf.name)}: ${esc(inf.text)}">
+      <span class="kn">${esc(inf.name)}</span><span class="kt">${esc(inf.text)}</span>${actions}</button>`;
+  }
+
+  // Cribbage-board progress: 120 holes in 4 streets of 30, grouped in fives. Two pegs leapfrog like the real thing.
+  function holeXY(h) {
+    if (h <= 0) return [6, 12];
+    const i = Math.min(h, 120) - 1, r = Math.floor(i / 30), c = i % 30;
+    return [16 + c * 8.7 + Math.floor(c / 5) * 3.6, 12 + r * 14];
+  }
+  function pegboardSVG() {
+    let holes = '';
+    for (let h = 1; h <= 120; h++) { const [x, y] = holeXY(h); holes += `<circle class="hole${h % 5 === 0 ? ' five' : ''}" cx="${x.toFixed(1)}" cy="${y}" r="2.3"/>`; }
+    const [s0x, s0y] = holeXY(0);
+    const [bx, by] = holeXY(ui.backPeg), [fx, fy] = holeXY(ui.frontPeg);
+    return `<svg class="pegboard" viewBox="0 0 300 66" role="img" aria-label="Pegboard: blind progress">
+      <rect class="track" x="0" y="0" width="300" height="66" rx="7"/>
+      <circle class="hole" cx="${s0x}" cy="${s0y}" r="2.3"/>${holes}
+      <text x="276" y="63">121</text>
+      <circle class="peg-back" id="pegBack" cx="${bx.toFixed(1)}" cy="${by}" r="3.6"/>
+      <circle class="peg-front" id="pegFront" cx="${fx.toFixed(1)}" cy="${fy}" r="3.8"/></svg>`;
+  }
+  function pegFor(score, target) { return Math.min(120, Math.round((score / target) * 120)); }
+
+  // ---------------- Side panel ----------------
+  function renderSide() {
+    const r = ui.run, b = r.blind;
+    const info = G.nextBlindInfo(r)[Math.min(r.blindIdx, 2)];
+    const name = b ? b.name : (r.over ? '—' : info.name);
+    const btext = b ? (b.boss ? b.boss.text : '') : (r.over ? '' : info.text);
+    const target = b ? b.target : (r.over ? 0 : info.target);
+    const score = b ? b.score : 0;
+    const d = ui.disp;
+    return `
+      <div class="brand"><h1>Pegged</h1><small>prototype v0.1</small></div>
+      <div class="panel blind-card">
+        <div class="eyebrow">Ante ${Math.min(r.ante, r.cfg.antes)} of ${r.cfg.antes} · ${b ? r.cfg.blindNames[b.idx] : 'Up next'}</div>
+        <div class="bname">${esc(name)}</div>
+        <div class="btext">${esc(btext)}</div>
+        <div class="target-row"><span class="label">Target</span><span class="num">${fmt(target)}</span></div>
+        <div class="target-row"><span class="label">Pegged</span><span class="score-big" id="blindScore">${fmt(score)}</span></div>
+        ${pegboardSVG()}
+      </div>
+      <div class="panel">
+        <div class="label" id="countTitle">${esc(d.title || 'The count')}</div>
+        <div class="pxm"><div class="box pts" id="dPts">${fmt(d.points)}</div><div class="x">×</div><div class="box mul" id="dMul">${fmt(d.mult)}</div></div>
+        <div class="pxm-total" id="dTot">${esc(d.total)}</div>
+        <div class="narration" id="dNarr" aria-live="polite">${esc(d.narr)}</div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="label">Deals</div><div class="v deals">${b ? b.deals : r.cfg.deals}</div></div>
+        <div class="stat"><div class="label">Swaps</div><div class="v swaps">${b ? b.swaps : r.cfg.swaps}</div></div>
+        <div class="stat"><div class="label">Money</div><div class="v money">$${r.money}</div></div>
+        <div class="stat"><div class="label">Deck</div><div class="v">${b ? b.pile.length : r.deck.filter(c => !c.burned).length}</div></div>
+      </div>
+      <div class="side-buttons">
+        <button class="btn small" data-act="levels">Levels</button>
+        <button class="btn small" data-act="deck">Deck</button>
+        <button class="btn small" data-act="rules">How to play</button>
+        <button class="btn small" data-act="speed">Speed ${ui.speed}×</button>
+        <button class="btn small" data-act="newrun">New run</button>
+        <button class="btn small" data-act="records">Run records</button>
+        <button class="btn small" data-act="seed" title="Seed">Seed ${r.seed}</button>
+      </div>`;
+  }
+
+  // ---------------- Main area ----------------
+  function renderRack(selectable = true) {
+    const r = ui.run;
+    let kibs = r.kibitzers.map((k, i) => kibHTML(k, i, { selectable })).join('');
+    for (let i = r.kibitzers.length; i < r.cfg.kibSlots; i++) kibs += `<div class="slot-empty" aria-hidden="true"></div>`;
+    let cons = r.consumables.map((c, i) => consHTML(c, i, { selectable })).join('');
+    for (let i = r.consumables.length; i < r.cfg.consSlots; i++) cons += `<div class="slot-empty" aria-hidden="true"></div>`;
+    return `<section class="rack">
+      <div><div class="slots-label"><span class="label">Kibitzers ${r.kibitzers.length}/${r.cfg.kibSlots}</span><span class="label">left to right</span></div><div class="kibs" id="kibs">${kibs}</div></div>
+      <div><div class="slots-label"><span class="label">Pegs &amp; Tricks ${r.consumables.length}/${r.cfg.consSlots}</span></div><div class="conses">${cons}</div></div>
+    </section>`;
+  }
+
+  function renderPlay() {
+    const r = ui.run, b = r.blind, z = ui.zoneCards;
+    const selecting = b.phase === 'select' && !ui.animating;
+    let handCards, cribCards, starter = null, houseHidden = true;
+    if (z) { handCards = z.keep; cribCards = z.crib; starter = z.starter; houseHidden = z.houseHidden; }
+    const hintSet = new Set(ui.hint ? ui.hint.best.throwIdx : []);
+    const handHTML = z
+      ? handCards.map(c => cardHTML(c, { debuff: z.debuffed.has(c.id) })).join('')
+      : b.hand.map((c, i) => cardHTML(c, { idx: i, sel: ui.sel.has(i), hint: hintSet.has(i), debuff: isDebuffed(c) })).join('');
+    const cribHTML = z
+      ? cribCards.map((c, i) => (i >= 2 && houseHidden ? cardHTML(c, { back: true }) : cardHTML(c, { debuff: z.debuffed.has(c.id), flip: i >= 2 && z.justFlipped }))).join('')
+      : [0, 1, 2, 3].map(() => cardHTML(null)).join('');
+    const starterHTML = starter ? cardHTML(starter, { debuff: z.debuffed.has(starter.id), flip: z.starterFlip }) : cardHTML(null);
+    const nsel = ui.sel.size;
+    let actions = '';
+    if (selecting) {
+      actions = `
+        <button class="btn blue" data-act="swap" ${nsel >= 1 && nsel <= r.cfg.swapMax && b.swaps > 0 ? '' : 'disabled'}>Swap ${nsel || ''} (${b.swaps} left)</button>
+        <button class="btn brass" data-act="throw" ${nsel === 2 ? '' : 'disabled'}>Throw 2 to crib</button>
+        <button class="btn" data-act="hint">Hint</button>`;
+    } else if (!ui.animating) {
+      if (b.phase === 'counted') actions = `<button class="btn brass" data-act="next">Next deal</button>`;
+      if (b.phase === 'won') actions = `<button class="btn brass" data-act="cashout">Cash out</button>`;
+      if (b.phase === 'lost') actions = `<button class="btn red" data-act="gameover">See the damage</button>`;
+    }
+    return `${renderRack(true)}
+      <section class="felt" id="felt">
+        <div class="felt-top">
+          <div class="zone"><span class="label">Deck · Starter</span>
+            <div class="row"><div class="card back deckpile" aria-label="Draw pile"><span class="cnt">${b.pile.length}</span></div><div id="starterZone">${starterHTML}</div></div></div>
+          <div class="zone"><span class="label">Your crib (2 yours · 2 from the House)</span><div class="row" id="cribZone">${cribHTML}</div></div>
+        </div>
+        <div class="msg" id="msg">${esc(ui.msg)}</div>
+        <div class="hand-row" id="handZone">${handHTML}</div>
+      </section>
+      <section class="actions">${actions}</section>`;
+  }
+
+  function renderBlinds() {
+    const r = ui.run, infos = G.nextBlindInfo(r);
+    const chip = ['', 'big', 'boss'];
+    return `${renderRack(true)}<section class="panel screen">
+      <h2>Ante ${r.ante}: choose your next blind</h2>
+      <div class="blinds">${infos.map(bi => {
+        const st = bi.idx < r.blindIdx ? 'done' : bi.idx > r.blindIdx ? 'future' : 'now';
+        return `<div class="panel blind-opt ${st}">
+          <div class="chip ${chip[bi.idx]}">${esc(bi.idx === 2 ? 'Boss' : bi.idx === 1 ? 'Big' : 'Small')}</div>
+          <div class="bname" style="font:18px var(--display)">${esc(bi.name)}</div>
+          <div class="btext" style="color:var(--brass);min-height:2.4em;font-size:14px">${esc(bi.text || 'No special rules')}</div>
+          <div><span class="label">Target</span><div style="font:24px var(--display)">${fmt(bi.target)}</div></div>
+          <div class="label">Reward $${bi.reward}</div>
+          ${st === 'now' ? `<button class="btn brass" data-act="play">Play</button>` : `<span class="label">${st === 'done' ? 'Cleared' : 'Upcoming'}</span>`}
+        </div>`;
+      }).join('')}</div></section>`;
+  }
+
+  function renderCash() {
+    const c = ui.cash;
+    return `${renderRack(false)}<section class="panel screen">
+      <h2>Cash out</h2>
+      <div class="cash-lines">${c.lines.map(l => `<div class="cash-line"><span>${esc(l.label)}</span><span class="amt">+$${l.amt}</span></div>`).join('')}
+        <div class="cash-line"><strong>Total</strong><span class="amt">+$${c.total}</span></div></div>
+      ${feelHTML()}
+      <div><button class="btn brass" data-act="toshop">${ui.run.over ? 'Finish' : 'Go to the shop'}</button></div></section>`;
+  }
+
+  // Optional one-tap note on the blind just played, for the per-run record. Tap again to clear.
+  function feelHTML() {
+    const bl = ui.rec && ui.rec.blinds[ui.rec.blinds.length - 1];
+    if (!bl) return '';
+    const on = v => (bl.feel === v ? ' sel' : '');
+    return `<div class="feel" style="margin:10px 0"><span class="label">That blind felt (optional)</span>
+      <button class="btn small${on('good')}" data-act="feel-good" aria-pressed="${bl.feel === 'good'}">Good</button>
+      <button class="btn small${on('unfair')}" data-act="feel-unfair" aria-pressed="${bl.feel === 'unfair'}">Unfair</button></div>`;
+  }
+
+  function recordJSON(all) {
+    return JSON.stringify(all ? loadRecords() : ui.rec, null, 1);
+  }
+  function recordPanelHTML() {
+    if (!ui.rec) return '';
+    return `<div class="record" style="margin-top:14px">
+      <label class="label" for="runNote">Your note on this run (optional)</label><br>
+      <textarea id="runNote" rows="3" style="width:100%;margin:6px 0;padding:8px;border-radius:6px;border:1px solid var(--grain);background:var(--walnut-0);color:var(--text)">${esc(ui.rec.note || '')}</textarea>
+      <div><button class="btn small brass" data-act="copyrecord">Copy record</button> <button class="btn small" data-act="copyall">Copy all records</button></div>
+      <label class="label" for="recordText">Run record (JSON)</label>
+      <textarea id="recordText" readonly rows="6" style="width:100%;margin-top:6px;font:12px monospace;background:var(--walnut-0);color:var(--ivory-2)">${esc(recordJSON(false))}</textarea>
+    </div>`;
+  }
+
+  function renderShop() {
+    const r = ui.run, s = r.shop;
+    const kibs = s.kibs.map((k, i) => `<div class="shop-item">${kibHTML(k, -1)}<div class="price">$${k.cost}</div>
+      <button class="btn small brass" data-act="buykib" data-i="${i}" ${r.money >= k.cost && r.kibitzers.length < r.cfg.kibSlots ? '' : 'disabled'}>Buy</button></div>`).join('') || '<span class="label">Sold out</span>';
+    const cons = s.cons.map((c, i) => `<div class="shop-item">${consHTML(c, -1)}<div class="price">$${c.cost}</div>
+      <button class="btn small brass" data-act="buycons" data-i="${i}" ${r.money >= c.cost && r.consumables.length < r.cfg.consSlots ? '' : 'disabled'}>Buy</button>
+      ${c.kind === 'peg' ? `<button class="btn small blue" data-act="buyuse" data-i="${i}" ${r.money >= c.cost ? '' : 'disabled'}>Buy &amp; use</button>` : ''}</div>`).join('') || '<span class="label">Sold out</span>';
+    return `${renderRack(true)}<section class="panel screen">
+      <h2>The shop</h2>
+      <div class="shop-grid">
+        <div><div class="label" style="margin-bottom:6px">Kibitzers</div><div class="shop-items">${kibs}</div></div>
+        <div><div class="label" style="margin-bottom:6px">Pegs &amp; Tricks</div><div class="shop-items">${cons}</div></div>
+      </div>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="btn blue" data-act="reroll" ${r.money >= s.rerollCost ? '' : 'disabled'}>Reroll $${s.rerollCost}</button>
+        <button class="btn brass" data-act="leaveshop">Next blind</button>
+      </div>
+      <div class="msg" style="text-align:left">${esc(ui.msg)}</div></section>`;
+  }
+
+  function renderOver() {
+    const r = ui.run;
+    return `<section class="panel screen">
+      <h2>${r.won ? 'You won the run.' : 'Skunked.'}</h2>
+      <p style="color:var(--ivory-2)">${r.won ? 'All eight antes cleared.' : `You fell at Ante ${r.ante}, ${r.blind ? esc(r.blind.name) : ''}.`}
+        Best single count: <strong>${fmt(r.stats.bestCount)}</strong>. Deals played: ${r.stats.deals}. Seed ${r.seed}.</p>
+      ${r.won ? '' : feelHTML()}
+      <div><button class="btn brass" data-act="newrun">New run</button> <button class="btn" data-act="replay">Replay this seed</button></div>
+      ${recordPanelHTML()}
+    </section>`;
+  }
+
+  function renderOverlay() {
+    if (!ui.overlay) return '';
+    const r = ui.run;
+    let body = '';
+    if (ui.overlay === 'levels') {
+      body = `<h3>Scoring levels</h3><p>Level 1 is plain cribbage. Pegs raise a category: more Points on every event, plus Mult once per count when it scores.</p>
+      <div class="tbl-wrap"><table class="levels"><thead><tr><th>Category</th><th>Lv</th><th>Base</th><th>Points / event</th><th>Mult bonus</th></tr></thead><tbody>
+      ${E.CAT_ORDER.map(k => { const c = E.CATEGORIES[k], lv = r.levels[k]; const base = { heels: 2, fifteen: 2, pair: 2, run: '1 per card', flush: '1 per card', nobs: 1 }[k];
+        return `<tr><td>${c.name}</td><td>${lv}</td><td>${base}</td><td>+${(lv - 1) * c.lvPts}</td><td>+${fmt((lv - 1) * c.lvMult)}</td></tr>`; }).join('')}
+      </tbody></table></div>`;
+    } else if (ui.overlay === 'deck') {
+      const live = r.deck.filter(c => !c.burned);
+      const cnt = {}; for (const c of live) cnt[c.suit + ':' + c.rank] = (cnt[c.suit + ':' + c.rank] || 0) + 1;
+      let g = `<div class="h"></div>${E.RANK_LABEL.slice(1).map(x => `<div class="h">${x}</div>`).join('')}`;
+      for (let s = 0; s < 4; s++) {
+        g += `<div class="h" style="color:${isRed({ suit: s }) ? 'var(--red)' : 'var(--ivory)'}">${E.SUIT_GLYPH[s]}</div>`;
+        for (let k = 1; k <= 13; k++) { const n = cnt[s + ':' + k] || 0; g += `<div class="c ${n === 0 ? 'z' : n > 1 ? 'x' : ''}">${n}</div>`; }
+      }
+      body = `<h3>Your deck · ${live.length} cards</h3><p>Tricks change cards permanently. Numbers above 1 mean duplicates.</p><div class="tbl-wrap"><div class="deckgrid">${g}</div></div>`;
+    } else if (ui.overlay === 'rules') {
+      body = `<h3>How to play</h3>
+      <p>Each blind gives you a few deals to peg a target score.</p>
+      <ol>
+        <li>You're dealt 6 cards. <strong>Swap</strong> up to 4 of them for new ones if you like (limited per blind).</li>
+        <li><strong>Throw 2 to your crib.</strong> The House adds 2 more face-down, so your crib is a second hand you only partly control.</li>
+        <li>A <strong>starter</strong> is cut. It counts with your hand and with your crib.</li>
+        <li>Both are counted, cribbage style, and each count scores <strong>Points × Mult</strong>.</li>
+      </ol>
+      <h3>What scores</h3>
+      <ul>
+        <li><strong>Fifteen</strong> (2): any cards adding to 15. Face cards count 10, Aces 1.</li>
+        <li><strong>Pair</strong> (2): two cards of the same rank. Three of a kind is 3 pairs.</li>
+        <li><strong>Run</strong> (1 per card): 3 or more ranks in a row, any suits. A duplicate card makes a double run.</li>
+        <li><strong>Flush</strong> (4 or 5): all 4 hand cards one suit (+1 if the starter matches). The crib needs all 5.</li>
+        <li><strong>His Nobs</strong> (1): the Jack of the starter's suit in hand or crib.</li>
+        <li><strong>His Heels</strong> (2): the starter itself is a Jack.</li>
+      </ul>
+      <p><strong>Kibitzers</strong> are the onlookers who bend the count (like jokers). They fire left to right, so put ×Mult ones last. <strong>Pegs</strong> level up a category. <strong>Tricks</strong> change cards in your hand permanently. Press <strong>Hint</strong> if you're unsure what to throw.</p>`;
+    } else if (ui.overlay === 'newrun') {
+      body = `<h3>Start a new run?</h3><p>Your current run will be lost.</p>
+      <label class="label" for="seedInput">Seed (optional)</label><br><input id="seedInput" inputmode="numeric" style="padding:8px;border-radius:6px;border:1px solid var(--grain);background:var(--walnut-0);color:var(--text);margin:6px 0 12px;width:180px">
+      <div><button class="btn brass" data-act="confirmnew">Start</button></div>`;
+    } else if (ui.overlay === 'records') {
+      const n = loadRecords().length;
+      body = `<h3>Run records</h3><p>${n} finished run${n === 1 ? '' : 's'} kept in this browser${ui.rec && ui.rec.result === 'in-progress' ? ', plus the run in progress' : ''}. Copy puts them on the clipboard as JSON.</p>
+      <div><button class="btn small brass" data-act="copyall">Copy all records</button> <button class="btn small" data-act="copyrecord">Copy this run's record</button></div>
+      <textarea id="recordText" readonly rows="8" style="width:100%;margin-top:8px;font:12px monospace;background:var(--walnut-0);color:var(--ivory-2)">${esc(recordJSON(true))}</textarea>`;
+    }
+    return `<div class="overlay" data-act="closeoverlay"><div class="panel sheet" role="dialog" aria-modal="true">${body}
+      <div style="margin-top:12px"><button class="btn" data-act="closeoverlay">Close</button></div></div></div>`;
+  }
+
+  function render() {
+    const r = ui.run;
+    $('#side').innerHTML = renderSide();
+    let main = '';
+    if (ui.screen === 'blinds') main = renderBlinds();
+    else if (ui.screen === 'play') main = renderPlay();
+    else if (ui.screen === 'cashout') main = renderCash();
+    else if (ui.screen === 'shop') main = renderShop();
+    else if (ui.screen === 'over') main = renderOver();
+    $('#main').innerHTML = main;
+    $('#overlay').innerHTML = renderOverlay();
+  }
+
+  // ---------------- Count animation ----------------
+  const sleep = ms => new Promise(res => { if (ui.skip) return res(); const t = setTimeout(res, ms / ui.speed); ui._t = { t, res }; });
+  function bump(id) { const el = document.getElementById(id); if (!el) return; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(() => el.classList.remove('bump'), 140); }
+  function setDisp(points, mult) {
+    ui.disp.points = points; ui.disp.mult = +(+mult).toFixed(2);
+    const p = $('#dPts'), m = $('#dMul');
+    if (p) p.textContent = fmt(points); if (m) m.textContent = fmt(ui.disp.mult);
+  }
+  function setNarr(t) { ui.disp.narr = t; const n = $('#dNarr'); if (n) n.textContent = t; }
+  function bubbleOn(el, text, kind) {
+    if (!el) return;
+    const b = document.createElement('span'); b.className = 'bubble ' + (kind || ''); b.textContent = text;
+    el.appendChild(b); setTimeout(() => b.remove(), Math.max(350, 900 / ui.speed));
+  }
+  function phrase(ev, n, again) {
+    if (again) return 'again!';
+    switch (ev.cat) {
+      case 'fifteen': return `fifteen ${n}`;
+      case 'pair': return `a pair is ${n}`;
+      case 'run': return `run of ${ev.cards.length} is ${n}`;
+      case 'flush': return `flush is ${n}`;
+      case 'nobs': return `one for his nobs, ${n}`;
+      case 'heels': return `two for his heels`;
+    }
+    return String(n);
+  }
+
+  async function animateCount(res, zoneIds, title) {
+    ui.disp.title = title;
+    const t = $('#countTitle'); if (t) t.textContent = title;
+    setDisp(0, 1); setNarr(''); const tot = $('#dTot'); if (tot) tot.textContent = '';
+    const zones = zoneIds.map(id => document.getElementById(id));
+    const cardEl = id => { for (const z of zones) { const el = z && z.querySelector(`[data-cid="${id}"]`); if (el) return el; } return null; };
+    const parts = [];
+    if (!res.steps.length) { setNarr('Nineteen. (Nothing scores.)'); await sleep(700); }
+    for (const st of res.steps) {
+      if (st.kind === 'event') {
+        const els = st.ev.cards.map(c => cardEl(c.id)).filter(Boolean);
+        els.forEach(e => e.classList.add('lit'));
+        parts.push(phrase(st.ev, st.traditional, st.retrigger));
+        setNarr(parts.join(', ') + '…');
+        setDisp(st.prePoints, st.preMult);
+        bumpBoth(st.pts, st.madd);
+        bubbleOn(els[0], `+${st.pts}${st.madd ? ` · +${fmt(st.madd)}×` : ''}`, 'pts');
+        await sleep(430);
+        for (const n of st.notes) await fireNote(n);
+        setDisp(st.points, st.mult);
+        els.forEach(e => e.classList.remove('lit'));
+      } else {
+        for (const n of st.notes) await fireNote(n);
+      }
+    }
+    setDisp(res.points, res.mult);
+    if (res.steps.length) setNarr(parts.join(', ') + '.');
+    const totalTxt = `= ${fmt(res.total)}`;
+    ui.disp.total = totalTxt; if (tot) tot.textContent = totalTxt;
+    await sleep(650);
+  }
+  function bumpBoth(p, m) { if (p) bump('dPts'); if (m) bump('dMul'); }
+  async function fireNote(n) {
+    const el = n.src && n.src.uid ? document.querySelector(`#kibs [data-uid="${n.src.uid}"]`) : null;
+    if (el) { el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire'); }
+    bubbleOn(el, n.text, n.kind);
+    setDisp(n.points, n.mult);
+    if (n.kind === 'mult') bump('dMul'); else if (n.kind === 'pts') bump('dPts');
+    await sleep(360);
+  }
+
+  async function animatePeg(from, to, target) {
+    const steps = 18, el = $('#blindScore');
+    for (let i = 1; i <= steps; i++) { if (el) el.textContent = fmt(Math.round(from + (to - from) * i / steps)); await sleep(22); }
+    ui.backPeg = ui.frontPeg; ui.frontPeg = pegFor(to, target);
+    const [bx, by] = holeXY(ui.backPeg), [fx, fy] = holeXY(ui.frontPeg);
+    const pb = $('#pegBack'), pf = $('#pegFront');
+    if (pb) { pb.setAttribute('cx', bx.toFixed(1)); pb.setAttribute('cy', by); }
+    if (pf) { pf.setAttribute('cx', fx.toFixed(1)); pf.setAttribute('cy', fy); }
+    await sleep(500);
+  }
+
+  async function doThrow() {
+    const r = ui.run, b = r.blind;
+    const idx = [...ui.sel];
+    const before = b.score;
+    const rec = G.throwAndCount(r, idx);
+    if (!rec) return;
+    if (ui.rec) R.dealt(ui.rec, r, rec);
+    save(); // B2: run save and record both hold the counted deal before the animation, so a reload mid-count keeps it
+    ui.sel.clear(); ui.hint = null; ui.animating = true; ui.skip = false;
+    const debuffed = new Set([...(rec.handRes.debuffed || []), ...(rec.cribRes ? rec.cribRes.debuffed : [])]);
+    ui.zoneCards = { keep: rec.keep, crib: rec.crib, starter: null, houseHidden: true, debuffed, starterFlip: false, justFlipped: false };
+    ui.msg = 'Cutting for the starter…';
+    // show the throw with the old score still up, then reveal
+    const scoreNow = b.score; b.score = before;
+    render();
+    await sleep(450);
+    ui.zoneCards.starter = rec.starter; ui.zoneCards.starterFlip = true;
+    ui.msg = rec.starter.rank === 11 ? 'A Jack! Two for his heels.' : 'Counting your hand.';
+    render();
+    await sleep(500);
+    await animateCount(rec.handRes, ['handZone', 'starterZone'], 'Your hand');
+    if (rec.cribRes) {
+      ui.zoneCards.houseHidden = false; ui.zoneCards.justFlipped = true; ui.zoneCards.starterFlip = false;
+      ui.msg = 'The House turns over its two cards. Counting your crib.';
+      render();
+      await sleep(550);
+      ui.zoneCards.justFlipped = false;
+      await animateCount(rec.cribRes, ['cribZone', 'starterZone'], 'Your crib');
+    } else {
+      ui.msg = 'The Dry Crib: your crib is not counted.';
+      render(); await sleep(600);
+    }
+    b.score = scoreNow;
+    ui.disp.title = 'This deal';
+    ui.disp.total = `Hand ${fmt(rec.handRes.total)} + crib ${fmt(rec.cribRes ? rec.cribRes.total : 0)} = ${fmt(rec.gained)}`;
+    const tt = $('#countTitle'), td = $('#dTot'); if (tt) tt.textContent = ui.disp.title; if (td) td.textContent = ui.disp.total;
+    await animatePeg(before, scoreNow, b.target);
+    ui.animating = false; ui.skip = false;
+    ui.msg = b.phase === 'won' ? `Blind cleared with ${fmt(b.score)} of ${fmt(b.target)}.`
+      : b.phase === 'lost' ? `Out of deals. ${fmt(b.score)} of ${fmt(b.target)}.`
+      : `${fmt(b.target - b.score)} to go, ${b.deals} deal${b.deals === 1 ? '' : 's'} left.`;
+    save();
+    render();
+  }
+
+  function sortHand() { const b = ui.run.blind; if (b) b.hand.sort((a, c) => a.rank - c.rank || a.suit - c.suit); }
+
+  // ---------------- Actions ----------------
+  function act(a, el) {
+    const r = ui.run;
+    switch (a) {
+      case 'play':
+        G.startBlind(r); sortHand(); ui.screen = 'play'; ui.sel.clear(); ui.zoneCards = null; ui.backPeg = 0; ui.frontPeg = 0;
+        if (ui.rec) R.blindStart(ui.rec, r, ui.speed);
+        ui.disp = { points: 0, mult: 1, total: '', narr: '', title: 'The count' };
+        ui.msg = r.blind.boss ? `${r.blind.boss.name}: ${r.blind.boss.text}.` : 'Pick 2 cards to throw to your crib, or select some to swap.';
+        break;
+      case 'swap':
+        if (G.swap(r, [...ui.sel])) { ui.sel.clear(); ui.hint = null; sortHand(); ui.msg = 'Swapped.'; if (ui.rec) R.swap(ui.rec); }
+        break;
+      case 'throw': if (ui.sel.size === 2) { doThrow(); return; } break;
+      case 'hint': {
+        ui.hint = G.adviseThrow(r); ui.sel = new Set(ui.hint.best.throwIdx);
+        if (ui.rec) R.hint(ui.rec, r, ui.hint);
+        const [i, j] = ui.hint.best.throwIdx, h = r.blind.hand;
+        ui.msg = `Hint: throw ${E.label(h[i])} and ${E.label(h[j])}. Expect about ${fmt(Math.round(ui.hint.best.handEv))} from the hand and ${fmt(Math.round(ui.hint.best.cribEv))} from the crib.`;
+        break;
+      }
+      case 'next':
+        G.nextDeal(r); sortHand(); ui.zoneCards = null; ui.sel.clear();
+        ui.disp = { points: 0, mult: 1, total: '', narr: '', title: 'The count' }; ui.msg = 'Pick 2 cards for your crib.';
+        break;
+      case 'cashout':
+        ui.cash = G.cashOut(r); ui.screen = 'cashout'; ui.zoneCards = null;
+        if (ui.rec) R.cashOut(ui.rec, r, ui.cash);
+        break;
+      case 'toshop':
+        if (r.over) { ui.screen = 'over'; break; }
+        G.openShop(r); ui.screen = 'shop'; ui.msg = '';
+        if (ui.rec) R.shopOpen(ui.rec, r);
+        break;
+      case 'gameover': ui.screen = 'over'; break;
+      case 'leaveshop':
+        if (ui.rec) R.shopClose(ui.rec, r);
+        ui.screen = 'blinds'; ui.selKib = -1; ui.selCons = -1; r.shop = null; ui.disp = { points: 0, mult: 1, total: '', narr: '' }; break;
+      case 'reroll': if (G.reroll(r) && ui.rec) R.reroll(ui.rec, r); break;
+      case 'buykib': {
+        const def = r.shop.kibs[+el.dataset.i];
+        if (!G.buyKib(r, +el.dataset.i)) ui.msg = 'Not enough money or no free slot.'; else { ui.msg = ''; if (ui.rec) R.bought(ui.rec, def, false); }
+        break;
+      }
+      case 'buycons': {
+        const def = r.shop.cons[+el.dataset.i];
+        if (!G.buyCons(r, +el.dataset.i, false)) ui.msg = 'Not enough money or no free slot.'; else { ui.msg = ''; if (ui.rec) R.bought(ui.rec, def, false); }
+        break;
+      }
+      case 'buyuse': {
+        const def = r.shop.cons[+el.dataset.i];
+        if (G.buyCons(r, +el.dataset.i, true)) { ui.msg = 'Level up!'; if (ui.rec) R.bought(ui.rec, def, true); }
+        break;
+      }
+      case 'kib-left': if (ui.selKib > 0) { G.moveKib(r, ui.selKib, ui.selKib - 1); ui.selKib--; if (ui.rec) R.reordered(ui.rec, r, ui.screen); } break;
+      case 'kib-right': if (ui.selKib < r.kibitzers.length - 1) { G.moveKib(r, ui.selKib, ui.selKib + 1); ui.selKib++; if (ui.rec) R.reordered(ui.rec, r, ui.screen); } break;
+      case 'kib-sell': {
+        const k = r.kibitzers[ui.selKib];
+        if (k && G.sellKib(r, ui.selKib) && ui.rec) R.sold(ui.rec, r, k, G.sellValue(k), ui.screen);
+        ui.selKib = -1; break;
+      }
+      case 'cons-sell': {
+        const c = r.consumables[ui.selCons];
+        if (c && G.sellCons(r, ui.selCons) && ui.rec) R.sold(ui.rec, r, c, G.sellValue(c), ui.screen);
+        ui.selCons = -1; break;
+      }
+      case 'cons-use': {
+        const def = r.consumables[ui.selCons];
+        const res = G.useCons(r, ui.selCons, [...ui.sel]);
+        if (res.ok) {
+          ui.selCons = -1; ui.sel.clear(); ui.hint = null; sortHand(); ui.msg = 'Done.';
+          if (ui.rec && def) R.consumableUsed(ui.rec, r, def, ui.screen);
+        } else ui.msg = res.why;
+        break;
+      }
+      case 'feel-good': if (ui.rec) R.setFeel(ui.rec, 'good'); break;
+      case 'feel-unfair': if (ui.rec) R.setFeel(ui.rec, 'unfair'); break;
+      case 'copyrecord': copyText(recordJSON(false), el); return;
+      case 'copyall': copyText(recordJSON(true), el); return;
+      case 'levels': case 'deck': case 'rules': case 'newrun': case 'records': ui.overlay = a; break;
+      case 'closeoverlay': ui.overlay = null; break;
+      case 'confirmnew': {
+        const v = ($('#seedInput') || {}).value; const seed = v && /^\d+$/.test(v.trim()) ? +v.trim() : null;
+        newGame(seed, seed == null ? 'new' : 'replay-seed'); ui.overlay = null; break;
+      }
+      case 'replay': newGame(r.seed, 'replay-seed'); break;
+      case 'speed':
+        ui.speed = ui.speed === 1 ? 2 : ui.speed === 2 ? 4 : 1;
+        try { localStorage.setItem('pegged.speed', ui.speed); } catch (e) { /* ignore */ }
+        break;
+      case 'seed': ui.overlay = 'newrun'; break;
+    }
+    save();
+    render();
+  }
+
+  // Clipboard first; if the browser refuses, copy through a hidden textarea. The button says what happened.
+  function copyText(text, el) {
+    const say = ok => { if (el) { const was = el.textContent; el.textContent = ok ? 'Copied' : 'Copy failed: select the text below'; setTimeout(() => { el.textContent = was; }, 1500); } };
+    const fallback = () => {
+      let ok = false;
+      try {
+        const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', '');
+        t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
+        ok = document.execCommand('copy'); t.remove();
+      } catch (e) { ok = false; }
+      say(ok);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => say(true), fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  function onClick(e) {
+    if (ui.animating) { // click anywhere fast-forwards the count
+      if (!ui.skip && ui.rec) R.skip(ui.rec);
+      ui.skip = true; if (ui._t) { clearTimeout(ui._t.t); ui._t.res(); } return;
+    }
+    const actEl = e.target.closest('[data-act]');
+    if (actEl) {
+      if (actEl.classList.contains('overlay') && e.target !== actEl) return; // clicks inside the sheet
+      if (actEl.getAttribute('aria-disabled') === 'true') return;
+      e.stopPropagation(); act(actEl.dataset.act, actEl); return;
+    }
+    const cardEl = e.target.closest('[data-idx]');
+    if (cardEl && ui.screen === 'play' && ui.run.blind.phase === 'select') {
+      const i = +cardEl.dataset.idx;
+      if (ui.sel.has(i)) ui.sel.delete(i); else if (ui.sel.size < 4) ui.sel.add(i);
+      render(); return;
+    }
+    const k = e.target.closest('[data-kib]');
+    if (k) { const i = +k.dataset.kib; ui.selKib = ui.selKib === i ? -1 : i; ui.selCons = -1; render(); return; }
+    const c = e.target.closest('[data-cons]');
+    if (c) { const i = +c.dataset.cons; ui.selCons = ui.selCons === i ? -1 : i; ui.selKib = -1; render(); return; }
+  }
+  function onKey(e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"][data-act]')) { e.preventDefault(); e.target.click(); }
+    if (e.key === 'Escape' && ui.overlay) { ui.overlay = null; render(); }
+  }
+
+  // ---------------- Boot / persistence ----------------
+  // ---------------- Per-run record storage ----------------
+  // 'pegged.records': append-only array of finished records. 'pegged.current': the record of the run in progress.
+  function loadRecords() {
+    try { const a = JSON.parse(localStorage.getItem('pegged.records') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function persistRecord() {
+    const rec = ui.rec; if (!rec) return;
+    try {
+      rec.lastScreen = ui.screen;
+      if (rec.result === 'in-progress') { localStorage.setItem('pegged.current', JSON.stringify(rec)); return; }
+      const all = loadRecords();
+      if (ui.recIndex == null || ui.recIndex >= all.length) { all.push(rec); ui.recIndex = all.length - 1; } else all[ui.recIndex] = rec; // note and feel edits after the end
+      localStorage.setItem('pegged.records', JSON.stringify(all));
+      localStorage.removeItem('pegged.current');
+    } catch (e) { /* storage unavailable or full: the record stays on screen and in memory */ }
+  }
+
+  function newGame(seed, mode) {
+    if (ui.rec && ui.rec.result === 'in-progress' && ui.run) { R.finish(ui.rec, ui.run, 'abandoned'); persistRecord(); }
+    ui.run = G.newRun(seed == null ? undefined : seed);
+    Object.assign(ui, { screen: 'blinds', sel: new Set(), selKib: -1, selCons: -1, zoneCards: null, hint: null, msg: '', cash: null,
+      disp: { points: 0, mult: 1, total: '', narr: '' }, backPeg: 0, frontPeg: 0 });
+    ui.rec = R.begin(ui.run, mode || 'new'); ui.recIndex = null;
+    persistRecord();
+  }
+  function snapshotState() {
+    // B2 (2026-11-21): the save holds the blind in progress and the open shop (Game.serialize v2), so a reload
+    // continues exactly where the player was. A finished run always saves as 'over' (B1).
+    const r = ui.run;
+    const screen = ui.screen === 'over' || r.over ? 'over'
+      : ui.screen === 'play' && r.blind ? 'play'
+      : ui.screen === 'shop' || ui.screen === 'cashout' ? 'shop' : 'blinds';
+    return { run: G.serialize(r), screen };
+  }
+  function restore(data) {
+    try {
+      if (!data || !data.run) return false;
+      ui.run = G.deserialize(data.run);
+      const s = ui.run.over ? 'over' : data.screen;
+      ui.screen = s === 'play' && !ui.run.blind ? 'blinds' : s; // a v1 save has no blind: it restarts, as before
+      ui.shopReopened = false;
+      if (ui.screen === 'shop' && !ui.run.shop) { G.openShop(ui.run); ui.shopReopened = true; } // after cash-out, or a v1 save
+      if (ui.screen === 'play') {
+        const b = ui.run.blind;
+        ui.backPeg = 0; ui.frontPeg = pegFor(b.score, b.target);
+        ui.msg = 'Picked up where you left off.';
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+  // After a restore: pick up this run's record and count the reload.
+  function resumeRecord() {
+    const r = ui.run;
+    let cur = null;
+    try { cur = JSON.parse(localStorage.getItem('pegged.current') || 'null'); } catch (e) { cur = null; }
+    if (cur && cur.seed === r.seed && cur.result === 'in-progress') {
+      ui.rec = cur; ui.recIndex = null;
+      if (!r.over) R.reloaded(ui.rec, !!r.blind); // blind kept by the save (v2): not a restart
+      // A shop opened by the restore is a new visit (after cash-out it is the first; a v1 save restocked it). A saved
+      // shop (v2) is the same visit, untouched.
+      if (ui.screen === 'shop' && ui.shopReopened) { R.shopClose(ui.rec, r); R.shopOpen(ui.rec, r); }
+      persistRecord();
+      return;
+    }
+    const all = loadRecords(), last = all[all.length - 1];
+    if (r.over && last && last.seed === r.seed) { ui.rec = last; ui.recIndex = all.length - 1; return; }
+    ui.rec = R.beginMidRun(r); ui.recIndex = null;
+    if (last && last.seed === r.seed && last.result === 'lost') {
+      // The record ended in a loss but the save is from before the losing deal: a reload during the losing count (B2).
+      ui.rec.reloads = 1; ui.rec.reloadsMidBlind = 1; ui.rec.afterRecordedLoss = true;
+    }
+  }
+  function save() {
+    try { localStorage.setItem('pegged.save', JSON.stringify(snapshotState())); } catch (e) { /* storage unavailable */ }
+    persistRecord();
+  }
+
+  function onError(message, phase) {
+    try { if (ui.rec) { R.error(ui.rec, ui.run, message, phase || ui.screen); persistRecord(); } } catch (e) { /* never let the record break the page */ }
+  }
+
+  function start(data) {
+    let ok = restore(data);
+    if (!ok) { try { ok = restore(JSON.parse(localStorage.getItem('pegged.save') || 'null')); } catch (e) { ok = false; } }
+    if (ok) resumeRecord();
+    else { newGame(); ui.overlay = 'rules'; }
+    window.addEventListener('error', e => onError(e.message || 'error'));
+    window.addEventListener('unhandledrejection', e => onError((e.reason && e.reason.message) || String(e.reason)));
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('input', e => {
+      if (e.target && e.target.id === 'runNote' && ui.rec) { ui.rec.note = e.target.value.slice(0, 2000); persistRecord(); }
+    });
+    render();
+  }
+  try { window.claude?.hot?.snapshot?.(snapshotState); } catch (e) { /* not available */ }
+  if (window.claude?.hot?.ready) window.claude.hot.ready(start); else start(window.claude?.hot?.data ?? null);
+  window.__pegged = ui; // debugging handle
+})();
+
+
+</script>
+<script>window.PEGGED_FEEDBACK = {"build":"pegged-6248d4e922"};</script>
+<script>// Playtest notes button for the hosted Pegged page (orchestrator, 2026-11-22; Beff: "a button in the corner for
+// feedback so they can drop notes during play without stopping"). Host layer only: the game's src/ does not know
+// about it. Added to the page by tools/pegged-build.js, after ui.js.
+// Every note is kept in this browser ('pegged.notes') with where the player was in the run, so nothing is lost
+// offline. If window.PEGGED_FEEDBACK.formUrl is set (a Google Form's formResponse URL plus its entry ids), each note
+// is also sent there in the background. "Copy my notes" puts all of them on the clipboard as text.
+(() => {
+  'use strict';
+  const CFG = window.PEGGED_FEEDBACK || {};
+  const KEY = 'pegged.notes', NAME_KEY = 'pegged.tester';
+  const get = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+  const set = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  let notes = get(KEY, []);
+  if (!Array.isArray(notes)) notes = [];
+
+  // Where the player is, read from the run record the game keeps in localStorage. Best effort: never throws.
+  function context() {
+    const c = { build: CFG.build || '', seed: null, at: '' };
+    try {
+      const rec = JSON.parse(localStorage.getItem('pegged.current') || 'null');
+      if (rec) {
+        c.build = c.build || rec.buildId || '';
+        c.seed = rec.seed;
+        const b = rec.blinds && rec.blinds[rec.blinds.length - 1];
+        const parts = [];
+        if (b && b.ante != null) parts.push('ante ' + b.ante);
+        if (b && (b.bossName || b.blindName)) parts.push(String(b.bossName || b.blindName));
+        if (b && Array.isArray(b.deals)) parts.push('deal ' + b.deals.length);
+        if (rec.lastScreen) parts.push('screen ' + rec.lastScreen);
+        c.at = parts.join(', ');
+      }
+    } catch (e) {}
+    return c;
+  }
+
+  function send(note) {
+    if (!CFG.formUrl || !CFG.fields) return Promise.resolve(false);
+    const body = new URLSearchParams();
+    const f = CFG.fields;
+    if (f.note) body.set(f.note, note.text);
+    if (f.name) body.set(f.name, note.name || '');
+    if (f.where) body.set(f.where, note.at || '');
+    if (f.seed) body.set(f.seed, note.seed == null ? '' : String(note.seed));
+    if (f.build) body.set(f.build, note.build || '');
+    // no-cors: the form accepts the post but the reply is opaque, so "sent" means "handed to the browser".
+    return fetch(CFG.formUrl, { method: 'POST', mode: 'no-cors', body }).then(() => true, () => false);
+  }
+
+  const css = `
+  .fb-btn{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:60;
+    font:600 15px var(--body,sans-serif);color:var(--ink,#1c1714);background:var(--brass,#d4ad55);border:0;border-radius:999px;
+    padding:10px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+  .fb-btn:focus-visible,.fb-panel button:focus-visible,.fb-panel textarea:focus-visible,.fb-panel input:focus-visible{outline:3px solid var(--ivory,#f3ebdd);outline-offset:2px}
+  .fb-panel{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 52px);z-index:60;
+    width:min(340px,calc(100vw - 24px));background:var(--walnut-1,#241912);color:var(--text,#efe4d2);border:1px solid var(--brass-dim,#8f7337);
+    border-radius:14px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.55);font:15px/1.4 var(--body,sans-serif)}
+  .fb-panel[hidden]{display:none}
+  .fb-panel h4{margin:0 0 6px;font:400 17px var(--display,serif);color:var(--brass,#d4ad55)}
+  .fb-panel label{display:block;font-size:13px;color:var(--muted,#b7a58c);margin-top:6px}
+  .fb-panel textarea,.fb-panel input{width:100%;box-sizing:border-box;font:inherit;color:var(--text,#efe4d2);background:var(--walnut-0,#1a120d);
+    border:1px solid var(--grain,#4a3424);border-radius:8px;padding:8px}
+  .fb-panel textarea{min-height:84px;resize:vertical}
+  .fb-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .fb-panel button{font:600 14px var(--body,sans-serif);border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid var(--brass-dim,#8f7337);
+    background:transparent;color:var(--text,#efe4d2)}
+  .fb-panel button.fb-send{background:var(--brass,#d4ad55);color:var(--ink,#1c1714);border-color:transparent}
+  .fb-status{font-size:13px;color:var(--muted,#b7a58c);min-height:18px;margin-top:6px}`;
+  const style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
+
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'fb-btn'; btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'fb-panel');
+  const panel = document.createElement('div');
+  panel.className = 'fb-panel'; panel.id = 'fb-panel'; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Playtest notes');
+  panel.innerHTML = `<h4>Playtest notes</h4>
+    <div style="font-size:13px;color:var(--muted,#b7a58c)">Jot anything: fun, confusing, broken, too hard. Your game keeps going.</div>
+    <label for="fb-text">Note</label><textarea id="fb-text" placeholder="What just happened, and how did it feel?"></textarea>
+    <label for="fb-name">Your name (remembered)</label><input id="fb-name" maxlength="40" autocomplete="nickname">
+    <div class="fb-row"><button type="button" class="fb-send">Save note</button><button type="button" class="fb-copy">Copy my notes</button><button type="button" class="fb-close">Close</button></div>
+    <div class="fb-status" aria-live="polite"></div>`;
+  document.body.appendChild(panel); document.body.appendChild(btn);
+  const text = panel.querySelector('#fb-text'), name = panel.querySelector('#fb-name'), status = panel.querySelector('.fb-status');
+  name.value = get(NAME_KEY, '') || '';
+  const label = () => { btn.textContent = notes.length ? `Notes (${notes.length})` : 'Notes'; };
+  label();
+
+  function toggle(open) {
+    panel.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+    if (open) { status.textContent = ''; text.focus(); } else btn.focus();
+  }
+  function save() {
+    const t = text.value.trim();
+    if (!t) { status.textContent = 'Type a note first.'; return; }
+    const c = context();
+    const note = { text: t, name: name.value.trim(), time: new Date().toISOString(), build: c.build, seed: c.seed, at: c.at, sent: false };
+    set(NAME_KEY, note.name);
+    notes.push(note); set(KEY, notes); label();
+    text.value = '';
+    status.textContent = CFG.formUrl ? 'Saved. Sending...' : 'Saved in this browser. Use "Copy my notes" to send them over when you are done.';
+    send(note).then(ok => {
+      if (ok) { note.sent = true; set(KEY, notes); status.textContent = 'Saved and sent. Thanks!'; }
+      else if (CFG.formUrl) status.textContent = 'Saved here, but sending failed. Use "Copy my notes" when you are done.';
+    });
+    text.focus();
+  }
+  function asText() {
+    return notes.map(n => `[${n.time.slice(0, 16).replace('T', ' ')}] ${n.name || 'anon'}${n.at ? ' (' + n.at + ')' : ''}${n.seed != null ? ' seed ' + n.seed : ''}${n.build ? ' ' + n.build : ''}\n${n.text}`).join('\n\n');
+  }
+  function copy() {
+    if (!notes.length) { status.textContent = 'No notes yet.'; return; }
+    const s = asText();
+    const done = () => { status.textContent = `Copied ${notes.length} note${notes.length === 1 ? '' : 's'}. Paste them into a message.`; };
+    const fallback = () => { const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { status.textContent = 'Copy failed. Select and copy by hand.'; text.value = s; } ta.remove(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(s).then(done, fallback); else fallback();
+  }
+
+  btn.addEventListener('click', e => { e.stopPropagation(); toggle(panel.hidden); });
+  panel.querySelector('.fb-send').addEventListener('click', save);
+  panel.querySelector('.fb-copy').addEventListener('click', copy);
+  panel.querySelector('.fb-close').addEventListener('click', () => toggle(false));
+  // Keep the game's document-level click, key and input handlers from seeing anything that happens in the panel.
+  ['click', 'keydown', 'keyup', 'keypress', 'input'].forEach(t => panel.addEventListener(t, e => {
+    if (t === 'keydown' && e.key === 'Escape') toggle(false);
+    if (t === 'keydown' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
+    e.stopPropagation();
+  }));
+})();
+
+</script>
+
+</body></html>
